@@ -1,3 +1,12 @@
+export type Role = "admin" | "business" | "member";
+
+export const ADMIN_EMAIL = "matzi57@gmail.com";
+
+export function isAdmin(user: { email: string; role: Role } | null | undefined) {
+  if (!user) return false;
+  return user.role === "admin" || user.email === ADMIN_EMAIL;
+}
+
 export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
@@ -75,26 +84,28 @@ export const capabilities = [
   },
 ] as const;
 
-export const demoAccounts = [
+export const demoAccounts: {
+  type: string;
+  email: string;
+  name: string;
+  role: Role;
+}[] = [
   {
     type: "관리자",
-    email: "admin@ne1-tech.co.kr",
-    password: "demo1234",
-    name: "엔이원텍 관리자",
-    role: "admin" as const,
+    email: "matzi57@gmail.com",
+    name: "정범",
+    role: "admin",
   },
   {
     type: "사업자 회원",
     email: "biz@ne1-tech.co.kr",
-    password: "demo1234",
     name: "청라전기 담당자",
-    role: "business" as const,
+    role: "business",
   },
   {
     type: "개인 회원",
     email: "member@ne1-tech.co.kr",
-    password: "demo1234",
     name: "김현장",
-    role: "member" as const,
+    role: "member",
   },
-] as const;
+];

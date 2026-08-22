@@ -8,7 +8,7 @@ import { useApp } from "@/components/app-providers";
 import { Ne1Logo } from "@/components/ne1-logo";
 import { SiteSearch } from "@/components/site-search";
 import { Button } from "@/components/ui/button";
-import { company } from "@/lib/company";
+import { company, isAdmin } from "@/lib/company";
 import { formatPoints } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
@@ -62,12 +62,12 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          {user?.role === "admin" ? (
+          {isAdmin(user) ? (
             <Link
-              href="/admin/products/new"
-              className={cn("hover:text-amber-300", pathname.startsWith("/admin") && "text-amber-300")}
+              href="/admin"
+              className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname.startsWith("/admin") && "underline")}
             >
-              상품등록
+              운영화면
             </Link>
           ) : null}
         </nav>
@@ -116,6 +116,11 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {isAdmin(user) ? (
+            <Link href="/admin" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
+              운영화면
+            </Link>
+          ) : null}
           <Link href={user ? "/mypage" : "/login"} onClick={() => setOpen(false)} className="block py-1">
             {user ? "마이페이지" : "로그인"}
           </Link>

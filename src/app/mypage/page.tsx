@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
+import { isAdmin } from "@/lib/company";
 import { formatPrice } from "@/lib/format";
 import { formatPoints } from "@/lib/points";
 
@@ -36,9 +37,9 @@ export default function MyPage() {
           <p className="text-sm text-slate-500">{user.email}</p>
         </div>
         <div className="flex gap-2">
-          {user.role === "admin" ? (
-            <Button asChild variant="outline">
-              <Link href="/admin/products/new">상품 등록</Link>
+          {isAdmin(user) ? (
+            <Button asChild variant="amber">
+              <Link href="/admin">운영화면</Link>
             </Button>
           ) : null}
           <Button variant="outline" onClick={logout}>

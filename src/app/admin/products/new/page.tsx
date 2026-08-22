@@ -22,6 +22,7 @@ import {
   productFromPhoto,
   type CatalogProduct,
 } from "@/lib/catalog";
+import { isAdmin } from "@/lib/company";
 import { categories } from "@/lib/products";
 import { slugify } from "@/lib/utils";
 import { formatFileSize } from "@/lib/format";
@@ -90,13 +91,13 @@ export default function AdminProductNewPage() {
 
   if (!ready) return <div className="p-10 text-sm text-slate-500">불러오는 중입니다.</div>;
 
-  if (!user || user.role !== "admin") {
+  if (!isAdmin(user)) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-navy">관리자 로그인이 필요합니다.</h1>
         <p className="mt-2 text-slate-500">상품 등록은 관리자 계정으로만 할 수 있습니다.</p>
         <Button asChild className="mt-6">
-          <Link href="/login?next=/admin/products/new&email=admin@ne1-tech.co.kr">로그인 화면 열기</Link>
+          <Link href="/login?next=/admin/products/new&email=matzi57@gmail.com">로그인 화면 열기</Link>
         </Button>
       </div>
     );

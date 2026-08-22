@@ -22,6 +22,9 @@ export function SiteFooter() {
           <Link href="/login" className="block hover:text-white">
             로그인
           </Link>
+          <Link href="/admin" className="block hover:text-white">
+            운영화면
+          </Link>
           <Link href="/inquiry" className="block hover:text-white">
             견적·문의
           </Link>

@@ -8,13 +8,13 @@ import {
   useMemo,
   useState,
 } from "react";
-import { company, demoAccounts } from "@/lib/company";
+import { company, demoAccounts, type Role } from "@/lib/company";
 import { products as seedProducts } from "@/lib/products";
 import type { CatalogProduct } from "@/lib/catalog";
 import type { PaymentMethod } from "@/lib/payment";
 import { pointsFromAmount } from "@/lib/points";
 
-export type Role = "admin" | "business" | "member";
+export type { Role };
 
 export type SessionUser = {
   email: string;
@@ -22,7 +22,7 @@ export type SessionUser = {
   role: Role;
 };
 
-type StoredUser = SessionUser & { password: string };
+type StoredUser = SessionUser;
 
 export type CartItem = { slug: string; qty: number };
 
@@ -76,8 +76,8 @@ type CheckoutInput = {
   cardCvc?: string;
 };
 
-const AUTH_KEY = "ne1-auth-v010";
-const USERS_KEY = "ne1-users-v010";
+const AUTH_KEY = "ne1-auth-v012";
+const USERS_KEY = "ne1-users-v012";
 const CART_KEY = "ne1-cart-v010";
 const CATALOG_KEY = "ne1-catalog-v010";
 const ORDERS_KEY = "ne1-orders-v010";
@@ -98,7 +98,6 @@ function seedUsers(): StoredUser[] {
     email: account.email,
     name: account.name,
     role: account.role,
-    password: account.password,
   }));
 }
 
@@ -125,14 +124,9 @@ type AppState = {
   cartLines: { product: CatalogProduct; qty: number }[];
   productTotal: number;
   pointBalance: number;
-  login: (email: string, password: string) => string | null;
+  applySession: (user: SessionUser) => void;
   loginWithKakao: (input: { nickname: string; account: string }) => void;
-  signup: (input: {
-    name: string;
-    email: string;
-    password: string;
-    role: Role;
-  }) => string | null;
+  signup: (input: { name: string; email: string; role: Role }) => string | null;
   logout: () => void;
   addToCart: (slug: string, qty?: number) => void;
   updateQty: (slug: string, qty: number) => void;
@@ -162,7 +156,14 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       if (!merged.some((user) => user.email === item.email)) merged.push(item);
     });
     setUsers(merged);
-    setUser(readJson<SessionUser | null>(AUTH_KEY, null));
+    const localUser = readJson<SessionUser | null>(AUTH_KEY, null);
+    setUser(localUser);
+    void fetch("/api/auth/session")
+      .then((response) => response.json())
+      .then((data: { user?: SessionUser | null }) => {
+        if (data.user) setUser(data.user);
+      })
+      .catch(() => undefined);
     setCart(readJson<CartItem[]>(CART_KEY, []));
     setExtras(readJson<CatalogProduct[]>(CATALOG_KEY, []));
     setOrders(readJson<Order[]>(ORDERS_KEY, []));
@@ -207,37 +208,17 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     return mine.at(-1)?.balance ?? 0;
   }, [points, user]);
 
-  const login = useCallback(
-    (email: string, password: string) => {
-      const found = users.find((item) => item.email === email.trim().toLowerCase());
-      if (!found || found.password !== password) {
-        return "이메일 또는 비밀번호가 맞지 않습니다.";
-      }
-      setUser({ email: found.email, name: found.name, role: found.role });
-      return null;
-    },
-    [users],
-  );
+  const applySession = useCallback((next: SessionUser) => {
+    setUsers((prev) => (prev.some((item) => item.email === next.email) ? prev : [...prev, next]));
+    setUser(next);
+  }, []);
 
-  const signup = useCallback(
-    (input: { name: string; email: string; password: string; role: Role }) => {
-      const email = input.email.trim().toLowerCase();
-      if (!input.name.trim()) return "이름을 입력해 주세요.";
-      if (!email.includes("@")) return "올바른 이메일을 입력해 주세요.";
-      if (input.password.length < 6) return "비밀번호는 6자 이상이어야 합니다.";
-      if (users.some((item) => item.email === email)) return "이미 가입된 이메일입니다.";
-      const next: StoredUser = {
-        email,
-        name: input.name.trim(),
-        role: input.role,
-        password: input.password,
-      };
-      setUsers((prev) => [...prev, next]);
-      setUser({ email, name: next.name, role: next.role });
-      return null;
-    },
-    [users],
-  );
+  const signup = useCallback((input: { name: string; email: string; role: Role }) => {
+    const email = input.email.trim().toLowerCase();
+    if (!input.name.trim()) return "이름을 입력해 주세요.";
+    if (!email.includes("@")) return "올바른 이메일을 입력해 주세요.";
+    return null;
+  }, []);
 
   const loginWithKakao = useCallback(
     (input: { nickname: string; account: string }) => {
@@ -253,7 +234,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
             email,
             name: input.nickname.trim() || "카카오회원",
             role: "member",
-            password: `kakao:${email}`,
           },
         ];
       });
@@ -277,7 +257,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("message", onMessage);
   }, [loginWithKakao]);
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    setUser(null);
+    void fetch("/api/auth/logout", { method: "POST" });
+  }, []);
 
   const addToCart = useCallback((slug: string, qty = 1) => {
     setCart((prev) => {
@@ -442,7 +425,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     cartLines,
     productTotal,
     pointBalance,
-    login,
+    applySession,
     loginWithKakao,
     signup,
     logout,

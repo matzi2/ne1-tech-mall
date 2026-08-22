@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { AdminBar } from "@/components/admin-bar";
 import { InAppBrowser } from "@/components/in-app-browser";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -11,11 +12,17 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   if (isWorkSurface(pathname)) {
-    return <InAppBrowser>{children}</InAppBrowser>;
+    return (
+      <>
+        <AdminBar />
+        <InAppBrowser>{children}</InAppBrowser>
+      </>
+    );
   }
 
   return (
     <>
+      <AdminBar />
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
