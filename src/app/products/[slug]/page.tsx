@@ -1,0 +1,97 @@
+"use client";
+
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useApp } from "@/components/app-providers";
+import { ProductVisual } from "@/components/product-visual";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { formatFileSize, formatPrice } from "@/lib/format";
+import { getCategoryLabel } from "@/lib/products";
+
+export default function ProductDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
+  const { getProduct, addToCart, ready } = useApp();
+  const [qty, setQty] = useState(1);
+  const product = getProduct(slug);
+
+  if (!ready) {
+    return <div className="p-10 text-sm text-slate-500">상품을 불러오는 중입니다.</div>;
+  }
+
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-navy">상품을 찾지 못했습니다.</h1>
+        <p className="mt-2 text-slate-500">검색으로 다시 찾아보거나 제품몰로 돌아가 주세요.</p>
+        <Button asChild className="mt-6">
+          <Link href="/products">제품몰</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-2">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="aspect-[4/3]">
+          <ProductVisual product={product} />
+        </div>
+      </div>
+      <div>
+        <Badge>{getCategoryLabel(product.category)}</Badge>
+        <h1 className="mt-3 text-3xl font-bold text-navy">{product.name}</h1>
+        <p className="mt-1 text-sm text-slate-500">{product.sku} · {product.leadTime}</p>
+        <p className="mt-4 text-3xl font-bold text-navy">{formatPrice(product.price)}</p>
+        <p className="mt-4 leading-7 text-slate-600">{product.description}</p>
+        <div className="mt-6 flex items-center gap-3">
+          <Input
+            type="number"
+            min={1}
+            value={qty}
+            onChange={(event) => setQty(Math.max(1, Number(event.target.value) || 1))}
+            className="w-24"
+          />
+          <Button
+            onClick={() => {
+              addToCart(product.slug, qty);
+              router.push("/cart");
+            }}
+          >
+            장바구니 담기
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/inquiry">견적 문의</Link>
+          </Button>
+        </div>
+        {product.specs.length > 0 ? (
+          <dl className="mt-8 divide-y rounded-xl border border-slate-200 bg-white">
+            {product.specs.map((spec) => (
+              <div key={spec.label} className="grid grid-cols-2 px-4 py-3 text-sm">
+                <dt className="text-slate-500">{spec.label}</dt>
+                <dd className="font-medium text-navy">{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {product.documents.length > 0 ? (
+          <div className="mt-6">
+            <h2 className="font-semibold text-navy">첨부 문서</h2>
+            <ul className="mt-2 space-y-2 text-sm">
+              {product.documents.map((doc) => (
+                <li key={doc.id}>
+                  <a href={doc.dataUrl} download={doc.name} className="text-sky-700 hover:underline">
+                    {doc.name} ({formatFileSize(doc.size)})
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
