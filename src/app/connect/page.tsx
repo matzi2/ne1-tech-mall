@@ -82,12 +82,11 @@ export default function ConnectHubPage() {
       <p className="text-sm font-semibold tracking-wide text-[#0046CA]">SITE CONNECTIONS</p>
       <h1 className="mt-2 text-3xl font-bold text-[#000092]">사이트 연결 작업실</h1>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-        백그라운드에서 건너뛰지 않습니다. 각 버튼을 누르면 로그인·설정 화면이 작업 창으로 열리고, 이 화면에서도 바로 이어서 할 수 있습니다.
-        GitHub부터 카카오, 카드, 송금까지 직접 보고 연결하세요.
+        지금은 GitHub 연결 설정부터 진행합니다. GitHub가 붙으면 카카오·카드·송금 순으로 이어갑니다.
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
-        <Button type="button" onClick={() => openConnection("github")}>
-          GitHub부터 연결
+        <Button asChild>
+          <Link href="/connect/github">GitHub 연결 설정</Link>
         </Button>
         <Button type="button" variant="outline" onClick={() => openConnection("kakao")}>
           카카오 로그인 창

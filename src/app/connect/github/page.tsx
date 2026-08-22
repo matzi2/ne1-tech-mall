@@ -1,14 +1,9 @@
-"use client";
+import { startGitHubDeviceFlow } from "@/lib/github-connect";
+import { GitHubWorkWindow } from "@/components/github-work-window";
 
-import { Suspense } from "react";
-import { GitHubConnectPanel } from "@/components/github-connect-panel";
+export const dynamic = "force-dynamic";
 
-export default function GitHubConnectPage() {
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <Suspense fallback={<p className="text-sm text-slate-500">GitHub 연결 창을 준비하는 중입니다.</p>}>
-        <GitHubConnectPanel />
-      </Suspense>
-    </div>
-  );
+export default async function GitHubConnectPage() {
+  const initial = await startGitHubDeviceFlow({ repoName: "ne1-tech-mall" });
+  return <GitHubWorkWindow initial={initial} />;
 }

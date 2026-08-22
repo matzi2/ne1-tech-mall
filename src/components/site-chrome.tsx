@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 
 function isWorkSurface(pathname: string, popup: boolean) {
   if (popup) return true;
+  if (pathname.startsWith("/connect/github")) return true;
   if (pathname.startsWith("/oauth2")) return true;
   if (pathname.startsWith("/redirect")) return true;
   return false;

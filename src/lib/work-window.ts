@@ -32,7 +32,7 @@ export function openWorkWindow(
   ].join(",");
   const win = window.open(url, target, features);
   if (!win) {
-    window.location.href = url;
+    window.location.assign(url);
     return null;
   }
   win.focus();
@@ -56,10 +56,7 @@ export function openExternalWindow(
     "scrollbars=yes",
   ].join(",");
   const win = window.open(href, target, features);
-  if (!win) {
-    window.location.href = href;
-    return null;
-  }
+  if (!win) return null;
   win.focus();
   return win;
 }

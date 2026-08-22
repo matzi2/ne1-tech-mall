@@ -13,6 +13,7 @@ import { formatPoints } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
 const nav = [
+  { href: "/connect/github", label: "GitHub 연결" },
   { href: "/connect", label: "사이트 연결" },
   { href: "/company", label: "회사소개" },
   { href: "/products", label: "제품몰" },
@@ -53,7 +54,9 @@ export function SiteHeader() {
               href={item.href}
               className={cn(
                 "hover:text-sky-300",
-                pathname.startsWith(item.href) && "text-sky-300",
+                (item.href === "/connect"
+                  ? pathname === "/connect"
+                  : pathname.startsWith(item.href)) && "text-sky-300",
               )}
             >
               {item.label}

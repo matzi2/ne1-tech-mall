@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
   const [copied, setCopied] = useState(false);
   const [repoName, setRepoName] = useState("ne1-tech-mall");
   const [isPrivate, setIsPrivate] = useState(false);
+  const startedRef = useRef(false);
 
   const apply = useCallback((next: GitHubConnectState) => {
     setState(next);
@@ -41,8 +42,15 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
     setError(next.status === "error" ? next.message ?? "연결에 실패했습니다." : "");
   }, []);
 
+  const openGitHub = useCallback((uri: string) => {
+    return openExternalWindow(uri || "https://github.com/login/device", "github-device", {
+      width: 920,
+      height: 800,
+    });
+  }, []);
+
   const start = useCallback(
-    async (force = false) => {
+    async (force = false, openWindow = false) => {
       setBusy(true);
       setError("");
       try {
@@ -53,11 +61,11 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         });
         const next = (await response.json()) as GitHubConnectState;
         apply(next);
-        if (next.verificationUri) {
-          openExternalWindow(next.verificationUri, "github-device", {
-            width: 920,
-            height: 800,
-          });
+        if (openWindow && next.verificationUri) {
+          const opened = openGitHub(next.verificationUri);
+          if (!opened) {
+            setError("팝업이 막혀 있습니다. 아래 github.com/login/device 링크를 눌러 주세요.");
+          }
         }
       } catch {
         setError("GitHub 연결을 시작하지 못했습니다.");
@@ -65,7 +73,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         setBusy(false);
       }
     },
-    [apply, isPrivate, repoName],
+    [apply, isPrivate, openGitHub, repoName],
   );
 
   useEffect(() => {
@@ -85,10 +93,10 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
   }, [apply]);
 
   useEffect(() => {
-    if (!autoStart || !loaded) return;
-    if (state.status === "idle") {
-      void start(false);
-    }
+    if (!autoStart || !loaded || startedRef.current) return;
+    if (state.status === "published" || state.status === "authorized") return;
+    startedRef.current = true;
+    void start(false, false);
   }, [autoStart, loaded, start, state.status]);
 
   useEffect(() => {
@@ -134,76 +142,41 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">GITHUB 연결 설정</p>
+        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">1단계 · GITHUB 연결 설정</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">GitHub 저장소 연결</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Cursor Origin은 그대로 두고, GitHub에는 <code>github</code> 리모트로 올립니다.
-          아래 설정을 확인한 뒤 GitHub 로그인 창에서 코드를 입력하세요.
+          지금 이 화면에서 GitHub에 로그인합니다. 코드가 보이면 열린 GitHub 창에 입력하고 Authorize를 누르세요.
+          끝나면 <code>{repoName || "ne1-tech-mall"}</code> 저장소로 소스가 올라갑니다.
         </p>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
-          <div>
-            <Label htmlFor="repo">저장소 이름</Label>
-            <Input
-              id="repo"
-              className="mt-1 font-mono"
-              value={repoName}
-              onChange={(event) => setRepoName(event.target.value)}
-              disabled={connected}
-            />
-          </div>
-          <label className="flex items-end gap-2 pb-2 text-sm">
-            <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={(event) => setIsPrivate(event.target.checked)}
-              disabled={connected}
-            />
-            비공개 저장소
-          </label>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">원격 이름 github · 브랜치 main · origin(Cursor)은 유지</p>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#000092]">1. GitHub 로그인 코드</h2>
-        <div className="mt-4 rounded-xl bg-[#0d1117] px-4 py-6 text-center text-white">
-          <p className="text-xs uppercase tracking-[0.2em] text-white/50">one-time code</p>
-          <p className="mt-2 font-mono text-4xl font-bold tracking-[0.18em]">
-            {state.userCode ?? "---- ----"}
+        <div className="mt-5 rounded-xl bg-[#0d1117] px-4 py-7 text-center text-white">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/50">GitHub one-time code</p>
+          <p className="mt-3 font-mono text-4xl font-bold tracking-[0.2em] md:text-5xl">
+            {state.userCode ?? (busy ? "발급 중…" : "---- ----")}
           </p>
-          <p className="mt-3 text-xs text-white/60">
-            {state.message ?? "연결을 시작하면 GitHub 로그인 창이 열립니다."}
+          <p className="mt-3 text-sm text-white/70">
+            {state.message ?? "GitHub 로그인 창을 열고 이 코드를 입력하세요."}
           </p>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" onClick={() => void start(true)} disabled={busy}>
-            {state.userCode ? "코드 다시 발급 · GitHub 창 열기" : "GitHub 로그인 창 열기"}
+          <Button type="button" size="lg" onClick={() => void start(true, true)} disabled={busy}>
+            GitHub 로그인 창 열기
           </Button>
-          <Button type="button" variant="outline" onClick={() => void copyCode()} disabled={!state.userCode}>
+          <Button type="button" variant="outline" size="lg" onClick={() => void copyCode()} disabled={!state.userCode}>
             {copied ? "코드를 복사했습니다" : "코드 복사"}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              openExternalWindow(state.verificationUri, "github-device", {
-                width: 920,
-                height: 800,
-              })
-            }
-          >
-            github.com/login/device 다시 열기
+          <Button asChild variant="outline" size="lg">
+            <a href={state.verificationUri || "https://github.com/login/device"} target="_blank" rel="noreferrer">
+              github.com/login/device
+            </a>
           </Button>
         </div>
 
         <ol className="mt-5 list-decimal space-y-1 pl-5 text-sm text-slate-600">
-          <li>열린 GitHub 창에 위 코드를 입력합니다.</li>
-          <li>GitHub 계정으로 로그인한 뒤 Authorize GitHub CLI 를 누릅니다.</li>
-          <li>
-            승인이 끝나면 <code>{repoName || "ne1-tech-mall"}</code> 저장소를 만들고 main을 푸시합니다.
-          </li>
+          <li>GitHub 창이 열리면 위 코드를 입력합니다.</li>
+          <li>계정으로 로그인한 뒤 Authorize GitHub CLI 를 누릅니다.</li>
+          <li>이 화면이 연결됨으로 바뀌면 저장소 푸시까지 진행됩니다.</li>
         </ol>
 
         {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
@@ -233,9 +206,35 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#000092]">2. Personal Access Token으로 연결</h2>
+        <h2 className="text-lg font-semibold text-[#000092]">저장소 설정</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">
+          <div>
+            <Label htmlFor="repo">저장소 이름</Label>
+            <Input
+              id="repo"
+              className="mt-1 font-mono"
+              value={repoName}
+              onChange={(event) => setRepoName(event.target.value)}
+              disabled={connected}
+            />
+          </div>
+          <label className="flex items-end gap-2 pb-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(event) => setIsPrivate(event.target.checked)}
+              disabled={connected}
+            />
+            비공개 저장소
+          </label>
+        </div>
+        <p className="mt-2 text-xs text-slate-500">원격 이름 github · 브랜치 main · origin(Cursor)은 유지합니다.</p>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-[#000092]">다른 방법 · Personal Access Token</h2>
         <p className="mt-1 text-sm text-slate-600">
-          장치 코드 대신 토큰을 쓰는 경우, GitHub에서 <code>repo</code> 권한 토큰을 만든 뒤 아래에 붙여 넣으세요.
+          장치 코드 창이 막히면 GitHub에서 <code>repo</code> 권한 토큰을 만들어 붙여 넣으세요.
         </p>
         <form className="mt-4 space-y-3" onSubmit={submitToken}>
           <textarea
@@ -256,10 +255,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
             openExternalWindow(
               "https://github.com/settings/tokens/new?scopes=repo,read:org,workflow&description=NE1-TECH%20mall",
               "github-token",
-              {
-                width: 960,
-                height: 820,
-              },
+              { width: 960, height: 820 },
             )
           }
         >
