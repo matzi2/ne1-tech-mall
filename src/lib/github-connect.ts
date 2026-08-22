@@ -21,6 +21,7 @@ function sanitizeRepoName(value?: string) {
 type StoredState = GitHubConnectState & {
   deviceCode: string | null;
   accessToken: string | null;
+  lastPollAt?: string | null;
 };
 
 const emptyState = (): StoredState => ({
@@ -41,12 +42,14 @@ const emptyState = (): StoredState => ({
   isPrivate: false,
   deviceCode: null,
   accessToken: null,
+  lastPollAt: null,
 });
 
 function publicView(state: StoredState): GitHubConnectState {
   const {
     deviceCode: _deviceCode,
     accessToken: _accessToken,
+    lastPollAt: _lastPollAt,
     ...visible
   } = state;
   return visible;
@@ -152,6 +155,13 @@ export async function pollGitHubDeviceFlow(): Promise<GitHubConnectState> {
     return publicView(current);
   }
 
+  const minWaitMs = Math.max(5, current.interval || 5) * 1000;
+  if (current.lastPollAt && Date.now() - Date.parse(current.lastPollAt) < minWaitMs) {
+    return publicView(current);
+  }
+  current.lastPollAt = new Date().toISOString();
+  await writeState(current);
+
   const response = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
@@ -169,14 +179,19 @@ export async function pollGitHubDeviceFlow(): Promise<GitHubConnectState> {
     access_token?: string;
     error?: string;
     error_description?: string;
+    interval?: number;
   };
 
   if (data.error === "authorization_pending" || data.error === "slow_down") {
     current.message =
       data.error === "slow_down"
-        ? "GitHub가 잠시 대기를 요청했습니다. 창을 닫지 마세요."
+        ? "GitHub 승인은 됐습니다. 요청 제한이 풀리면 저장소를 만듭니다."
         : "GitHub 창에서 코드를 입력하고 Authorize를 눌러 주세요.";
-    if (data.error === "slow_down") current.interval = Math.min(current.interval + 5, 20);
+    if (typeof data.interval === "number" && data.interval > 0) {
+      current.interval = data.interval;
+    } else if (data.error === "slow_down") {
+      current.interval = Math.min(current.interval + 10, 60);
+    }
     await writeState(current);
     return publicView(current);
   }

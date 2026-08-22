@@ -18,7 +18,8 @@ export function GitHubWorkWindow({ initial }: { initial: GitHubConnectState }) {
 
   useEffect(() => {
     if (state.status !== "pending") return;
-    const wait = Math.max(3, state.interval || 5) * 1000;
+    if ((state.interval || 0) >= 60) return;
+    const wait = Math.max(5, state.interval || 5) * 1000;
     const timer = window.setInterval(() => {
       void fetch("/api/connect/github/poll", { method: "POST" })
         .then((response) => response.json())
