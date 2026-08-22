@@ -37,23 +37,37 @@ export function isProductCategory(value: string): value is ProductCategory {
 
 export function parseCategory(value: string): ProductCategory {
   const normalized = value.trim().toLowerCase();
-  const aliases: Record<string, ProductCategory> = {
-    distribution: "distribution",
-    배전반: "distribution",
-    분전반: "distribution",
-    control: "control",
-    자동제어반: "control",
-    제어반: "control",
-    switch: "switch",
-    전자식스위치: "switch",
-    스위치: "switch",
-    component: "component",
-    전자부품: "component",
-    부품: "component",
-  };
   const compact = normalized.replace(/\s+/g, "");
+  const aliases: Record<string, ProductCategory> = {
+    breaker: "breaker",
+    mccb: "breaker",
+    배선용차단기: "breaker",
+    차단기: "breaker",
+    elcb: "elcb",
+    누전차단기: "elcb",
+    contactor: "contactor",
+    전자접촉기: "contactor",
+    접촉기: "contactor",
+    power: "power",
+    smps: "power",
+    전원장치: "power",
+    전원: "power",
+    terminal: "terminal",
+    단자대: "terminal",
+    단자: "terminal",
+    surge: "surge",
+    spd: "surge",
+    서지보호기: "surge",
+    서지: "surge",
+    relay: "relay",
+    보조릴레이: "relay",
+    릴레이: "relay",
+    fuse: "fuse",
+    퓨즈: "fuse",
+    퓨즈홀더: "fuse",
+  };
   if (isProductCategory(normalized)) return normalized;
-  return aliases[compact] ?? "component";
+  return aliases[compact] ?? "terminal";
 }
 
 export function parsePrice(value: string): number | null {
@@ -104,7 +118,7 @@ function toProduct(row: Record<string, string>, index: number): CatalogProduct {
     name,
     summary: row.summary || row.요약 || row.한줄소개 || name,
     description: row.description || row.상세 || row.설명 || row.summary || name,
-    category: parseCategory(row.category || row.카테고리 || row.분류 || "component"),
+    category: parseCategory(row.category || row.카테고리 || row.분류 || "terminal"),
     price,
     leadTime: row.leadTime || row.납기 || "협의",
     stock: parseStock(row.stock || row.재고 || "in-stock"),
@@ -223,7 +237,7 @@ export function productFromPhoto(file: File, photo: ProductMedia): CatalogProduc
     summary: `${base} 사진으로 등록한 상품입니다.`,
     description:
       "제품 사진을 첨부해 등록했습니다. 사양과 가격은 관리 화면에서 이어서 수정할 수 있습니다.",
-    category: "component",
+    category: "terminal",
     price: null,
     leadTime: "협의",
     stock: "in-stock",
@@ -244,7 +258,7 @@ export function productFromDocument(file: File, document: ProductMedia): Catalog
     summary: `${base} 기술문서로 등록한 상품입니다.`,
     description:
       "사양서·도면·매뉴얼 문서를 첨부해 등록했습니다. 상품명과 가격은 관리 화면에서 보완할 수 있습니다.",
-    category: "component",
+    category: "terminal",
     price: null,
     leadTime: "협의",
     stock: "made-to-order",

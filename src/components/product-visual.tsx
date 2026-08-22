@@ -4,10 +4,14 @@ import type { CatalogProduct } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 const tones: Record<string, string> = {
-  distribution: "from-slate-800 to-sky-700",
-  control: "from-sky-800 to-cyan-600",
-  switch: "from-amber-700 to-orange-500",
-  component: "from-slate-700 to-slate-500",
+  breaker: "from-slate-800 to-sky-700",
+  elcb: "from-sky-800 to-cyan-600",
+  contactor: "from-indigo-800 to-blue-600",
+  power: "from-emerald-800 to-teal-600",
+  terminal: "from-slate-700 to-slate-500",
+  surge: "from-amber-700 to-orange-500",
+  relay: "from-violet-800 to-purple-600",
+  fuse: "from-rose-800 to-red-600",
 };
 
 export function ProductVisual({

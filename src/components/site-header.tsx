@@ -31,7 +31,7 @@ export function SiteHeader() {
             {company.domain} · {company.hours}
           </p>
           <p>
-            {company.phone} · {company.email}
+            {company.phone} · {company.phone2} · {company.email}
           </p>
         </div>
       </div>

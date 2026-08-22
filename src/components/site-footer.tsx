@@ -25,7 +25,8 @@ export function SiteFooter() {
         </div>
         <div className="text-sm leading-7">
           <p className="font-semibold text-white">고객지원</p>
-          <p>{company.phone}</p>
+          <p>TEL {company.phone} · {company.phone2}</p>
+          <p>FAX {company.fax}</p>
           <p>{company.email}</p>
           <p>{company.hours}</p>
         </div>
@@ -34,6 +35,9 @@ export function SiteFooter() {
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-4 text-xs text-white/50">
           <p>
             {company.legalName} · 대표 {company.ceo} · {company.address}
+          </p>
+          <p>
+            TEL {company.phone} · {company.phone2} · FAX {company.fax}
           </p>
           <p>
             입금계좌 {company.bank.name} {company.bank.account} (예금주 {company.bank.holder}) ·

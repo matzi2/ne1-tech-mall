@@ -2,7 +2,7 @@
   "name": "ne1-tech-mall",
   "version": "0.1.0",
   "private": true,
-  "description": "엔이원텍 공식 쇼핑몰 — 배전반 · 자동제어반 · 전자식 스위치 · 산업용 전자부품",
+  "description": "엔이원텍 공식 쇼핑몰 — 산업용 전자부품",
   "scripts": {
     "dev": "next dev --port 43177 --hostname 127.0.0.1",
     "build": "next build",

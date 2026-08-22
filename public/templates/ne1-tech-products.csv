@@ -1,3 +1,3 @@
 sku,name,category,price,summary,description,leadTime,stock,featured
-NE1-SAMPLE-01,샘플 전자식 스위치,switch,15000,파일 등록 예시 상품,CSV로 올린 전자식 스위치 예시입니다.,재고 1~2일,in-stock,false
-NE1-SAMPLE-02,샘플 분전반,배전반,880000,파일 등록 예시 분전반,카탈로그 파일로 등록하는 분전반 예시입니다.,제작 7~10일,made-to-order,true
+NE1-SAMPLE-01,샘플 배선용차단기 3P 63A,breaker,72000,파일 등록 예시 상품,CSV로 올린 배선용차단기 예시입니다.,재고 1~2일,in-stock,false
+NE1-SAMPLE-02,샘플 보조릴레이 DC 24V,relay,8900,파일 등록 예시 릴레이,카탈로그 파일로 등록하는 보조릴레이 예시입니다.,재고 당일,in-stock,true

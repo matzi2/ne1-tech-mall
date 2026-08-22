@@ -21,6 +21,16 @@ export default function CompanyPage() {
           <dt className="text-slate-500">업종</dt>
           <dd className="font-medium">{company.industry}</dd>
         </div>
+        <div>
+          <dt className="text-slate-500">전화</dt>
+          <dd className="font-medium">
+            {company.phone} · {company.phone2}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">팩스</dt>
+          <dd className="font-medium">{company.fax}</dd>
+        </div>
         <div className="sm:col-span-2">
           <dt className="text-slate-500">주소</dt>
           <dd className="font-medium">{company.address}</dd>

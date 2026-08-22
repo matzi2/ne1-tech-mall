@@ -21,10 +21,10 @@ export default function HomePage() {
               {company.domain}
             </p>
             <h1 className="mt-3 text-3xl font-bold leading-tight md:text-5xl">
-              {company.nameKo} 산업용 부품 쇼핑몰
+              {company.nameKo} 전자부품 쇼핑몰
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-white/75">
-              {company.tagline} 배전반·자동제어반·전자식 스위치·전자부품을 검색하고, 송금 또는 카드로 주문하세요. 회원 구매 시 결제금액의 1%가 포인트로 적립됩니다.
+              {company.tagline} 차단기, 접촉기, 전원장치, 단자대를 품목별로 검색하고 송금 또는 카드로 주문하세요. 회원 구매 시 결제금액의 1%가 포인트로 적립됩니다.
             </p>
             <div className="mt-6 max-w-lg">
               <SiteSearch />
@@ -49,7 +49,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-xl font-bold text-navy">카테고리</h2>
+        <h2 className="text-xl font-bold text-navy">품목 분류</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {categories
             .filter((item) => item.id !== "all")

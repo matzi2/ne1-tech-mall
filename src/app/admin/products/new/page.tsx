@@ -40,7 +40,7 @@ export default function AdminProductNewPage() {
     name: "",
     summary: "",
     description: "",
-    category: "component",
+    category: "breaker",
     price: "",
   });
 
@@ -198,7 +198,7 @@ export default function AdminProductNewPage() {
               name: manual.name,
               summary: manual.summary || manual.name,
               description: manual.description || manual.summary || manual.name,
-              category: (manual.category as CatalogProduct["category"]) || "component",
+              category: (manual.category as CatalogProduct["category"]) || "breaker",
               price: manual.price ? Number(manual.price) : null,
               leadTime: "협의",
               stock: "in-stock",
