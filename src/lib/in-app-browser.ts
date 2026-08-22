@@ -15,6 +15,12 @@ export const WORK_TABS: WorkTab[] = [
     match: (pathname) => pathname.startsWith("/connect/github"),
   },
   {
+    href: "/login",
+    label: "로그인",
+    match: (pathname) =>
+      pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/find-account"),
+  },
+  {
     href: "/connect",
     label: "연결 목록",
     match: (pathname) => pathname === "/connect",
@@ -60,7 +66,10 @@ export function isWorkSurface(pathname: string) {
   return (
     pathname.startsWith("/connect") ||
     pathname.startsWith("/oauth2") ||
-    pathname.startsWith("/redirect")
+    pathname.startsWith("/redirect") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/find-account")
   );
 }
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useApp } from "@/components/app-providers";
-import { ACCESS_TOKEN_KEY, CONNECTIONS_STORAGE } from "@/lib/connections";
+import { ACCESS_TOKEN_KEY, CONNECTIONS_STORAGE, type LocalConnectionState } from "@/lib/connections";
 
 function decodeKakaoToken(token: string) {
   const parts = token.split(".");
@@ -26,48 +27,66 @@ function decodeKakaoToken(token: string) {
 
 function RedirectHandler() {
   const params = useSearchParams();
-  const router = useRouter();
   const { loginWithKakao } = useApp();
   const [message, setMessage] = useState("카카오 로그인 결과를 저장하는 중입니다.");
+  const [ok, setOk] = useState(false);
+  const [nickname, setNickname] = useState("");
 
   useEffect(() => {
     const token = params.get("accesstoken") || params.get("accessToken");
     const code = params.get("code");
     if (!token && code) {
-      setMessage("카카오 인가 코드는 받았습니다. REST 시크릿이 없어 토큰 교환을 건너뜁니다. 작업용 로그인 창에서 다시 진행해 주세요.");
+      setMessage("카카오 인가 코드는 받았습니다. Client Secret이 없어 토큰 교환을 건너뜁니다. 카카오 탭에서 작업용 로그인으로 다시 진행해 주세요.");
       return;
     }
     if (!token) {
-      setMessage("accesstoken이 없습니다. 카카오 로그인 창에서 다시 시도해 주세요.");
+      setMessage("accesstoken이 없습니다. 카카오 탭에서 다시 로그인해 주세요.");
       return;
     }
     localStorage.setItem(ACCESS_TOKEN_KEY, `Bearer ${token}`);
     const profile = decodeKakaoToken(token);
     loginWithKakao(profile);
-    const local = JSON.parse(localStorage.getItem(CONNECTIONS_STORAGE) || "{}") as {
-      kakao?: { connected: boolean; nickname: string; at: string };
-    };
+    const local = JSON.parse(localStorage.getItem(CONNECTIONS_STORAGE) || "{}") as LocalConnectionState;
     local.kakao = { connected: true, nickname: profile.nickname, at: new Date().toISOString() };
     localStorage.setItem(CONNECTIONS_STORAGE, JSON.stringify(local));
-    const payload = { type: "ne1-kakao-login", accessToken: token, ...profile };
-    window.opener?.postMessage(payload, window.location.origin);
-    const next = params.get("next") || "/mypage";
-    const timer = window.setTimeout(() => {
-      if (window.opener) {
-        window.close();
-      } else {
-        router.replace(next);
-      }
-    }, 600);
-    return () => window.clearTimeout(timer);
-  }, [loginWithKakao, params, router]);
+    setNickname(profile.nickname);
+    setOk(true);
+    setMessage("카카오 로그인을 저장했습니다. 이 작업창에서 다음 연결로 이어갑니다.");
+  }, [loginWithKakao, params]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-6">
-      <div className="max-w-md text-center">
-        <p className="text-sm font-semibold text-[#FEE500] mix-blend-multiply">Kakao</p>
-        <h1 className="mt-2 text-xl font-bold text-[#191919]">로그인 처리</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{message}</p>
+    <div className="mx-auto max-w-md px-4 py-10">
+      <div
+        className={`rounded-2xl border p-6 ${
+          ok ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-slate-200 bg-white text-slate-700"
+        }`}
+      >
+        <p className="text-xs font-semibold tracking-wide">KAKAO REDIRECT</p>
+        <h1 className="mt-1 text-xl font-bold">{ok ? `연결됨 · ${nickname}` : "로그인 처리"}</h1>
+        <p className="mt-3 text-sm leading-6">{message}</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href="/oauth2/authorization/kakao"
+            className="inline-flex h-11 items-center rounded-lg bg-[#000092] px-4 text-sm font-semibold text-white"
+          >
+            카카오 연결 상태
+          </Link>
+          {ok ? (
+            <Link
+              href="/connect/card"
+              className="inline-flex h-11 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800"
+            >
+              카드 결제 테스트
+            </Link>
+          ) : (
+            <Link
+              href="/oauth2/authorization/kakao"
+              className="inline-flex h-11 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800"
+            >
+              다시 로그인
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

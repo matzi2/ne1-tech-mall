@@ -31,10 +31,10 @@ export default function HomePage() {
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild variant="amber">
-                <Link href="/connect/github">GitHub 연결 설정</Link>
+                <Link href="/login">이메일 로그인</Link>
               </Button>
               <Button asChild variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10">
-                <Link href="/login">로그인하고 포인트 적립</Link>
+                <Link href="/products">제품몰 보기</Link>
               </Button>
             </div>
           </div>

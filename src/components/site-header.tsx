@@ -13,7 +13,7 @@ import { formatPoints } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { href: "/connect/github", label: "GitHub 연결" },
+  { href: "/login", label: "로그인" },
   { href: "/connect", label: "사이트 연결" },
   { href: "/company", label: "회사소개" },
   { href: "/products", label: "제품몰" },
