@@ -2,31 +2,64 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { brand } from "@/lib/brand";
 import { company, demoAccounts } from "@/lib/company";
+import { openWorkWindow } from "@/lib/work-window";
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const { login } = useApp();
+  const { login, loginWithKakao } = useApp();
   const [email, setEmail] = useState(params.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { type?: string; nickname?: string; account?: string };
+      if (data?.type !== "ne1-kakao-login" || !data.account) return;
+      loginWithKakao({ nickname: data.nickname || "카카오회원", account: data.account });
+      router.push(params.get("next") || "/mypage");
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [loginWithKakao, params, router]);
+
   return (
     <div className="mx-auto grid max-w-5xl gap-8 px-4 py-12 lg:grid-cols-2">
       <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold text-sky-700">{company.domain}</p>
+        <p className="text-sm font-semibold text-[#0046CA]">{company.domain}</p>
         <h1 className="mt-2 text-2xl font-bold text-navy">로그인</h1>
         <p className="mt-2 text-sm text-slate-500">
-          회원 로그인 후 주문하면 포인트가 적립됩니다. 이 화면에서 바로 테스트할 수 있습니다.
+          카카오는 MATCHDOC과 같은 방식으로 별도 로그인 창이 열립니다. 이메일 로그인도 이 화면에서 바로 테스트할 수 있습니다.
         </p>
+        <button
+          type="button"
+          className="mt-6 flex h-12 w-full items-center justify-center rounded-md text-sm font-bold"
+          style={{ background: brand.yellow, color: brand.kakaoBrown }}
+          onClick={() => {
+            const redirect = `${window.location.origin}/redirect`;
+            openWorkWindow(
+              `/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirect)}`,
+              "ne1-kakao",
+              { width: 480, height: 740 },
+            );
+          }}
+        >
+          카카오 로그인 창 열기
+        </button>
+        <p className="mt-2 text-center text-xs text-slate-400">
+          OAuth2 · /oauth2/authorization/kakao → /redirect?accesstoken=
+        </p>
+        <div className="my-6 h-px bg-slate-200" />
         <form
-          className="mt-6 space-y-4"
+          className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
             const message = login(email, password);
@@ -61,14 +94,14 @@ function LoginForm() {
           </div>
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <Button type="submit" className="w-full" size="lg">
-            로그인
+            이메일 로그인
           </Button>
         </form>
         <div className="mt-4 flex justify-between text-sm">
-          <Link href="/find-account" className="text-sky-700">
+          <Link href="/find-account" className="text-[#0046CA]">
             아이디·비밀번호 찾기
           </Link>
-          <Link href="/signup" className="text-sky-700">
+          <Link href="/signup" className="text-[#0046CA]">
             회원가입
           </Link>
         </div>
@@ -96,6 +129,9 @@ function LoginForm() {
             </li>
           ))}
         </ul>
+        <Link href="/connect" className="mt-6 inline-block text-sm text-sky-200 underline">
+          모든 사이트 연결 작업실
+        </Link>
       </section>
     </div>
   );

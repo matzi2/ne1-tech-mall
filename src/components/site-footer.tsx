@@ -13,6 +13,9 @@ export function SiteFooter() {
         </div>
         <div className="text-sm leading-7">
           <p className="font-semibold text-white">쇼핑몰</p>
+          <Link href="/connect" className="block hover:text-white">
+            사이트 연결
+          </Link>
           <Link href="/products" className="block hover:text-white">
             제품몰
           </Link>

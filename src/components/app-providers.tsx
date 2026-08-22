@@ -126,6 +126,7 @@ type AppState = {
   productTotal: number;
   pointBalance: number;
   login: (email: string, password: string) => string | null;
+  loginWithKakao: (input: { nickname: string; account: string }) => void;
   signup: (input: {
     name: string;
     email: string;
@@ -237,6 +238,44 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     },
     [users],
   );
+
+  const loginWithKakao = useCallback(
+    (input: { nickname: string; account: string }) => {
+      const account = input.account.trim();
+      const email = account.includes("@")
+        ? account.toLowerCase()
+        : `kakao-${account.replace(/\W/g, "") || "user"}@kakao.ne1-tech.local`;
+      setUsers((prev) => {
+        if (prev.some((item) => item.email === email)) return prev;
+        return [
+          ...prev,
+          {
+            email,
+            name: input.nickname.trim() || "카카오회원",
+            role: "member",
+            password: `kakao:${email}`,
+          },
+        ];
+      });
+      setUser((prev) => {
+        const name = input.nickname.trim() || prev?.name || "카카오회원";
+        return { email, name, role: prev?.email === email ? prev.role : "member" };
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { type?: string; nickname?: string; account?: string };
+      if (data?.type === "ne1-kakao-login" && data.account) {
+        loginWithKakao({ nickname: data.nickname || "카카오회원", account: data.account });
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [loginWithKakao]);
 
   const logout = useCallback(() => setUser(null), []);
 
@@ -404,6 +443,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     productTotal,
     pointBalance,
     login,
+    loginWithKakao,
     signup,
     logout,
     addToCart,

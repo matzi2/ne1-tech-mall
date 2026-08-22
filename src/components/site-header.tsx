@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, ShoppingCart, UserRound } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "@/components/app-providers";
+import { Ne1Logo } from "@/components/ne1-logo";
 import { SiteSearch } from "@/components/site-search";
 import { Button } from "@/components/ui/button";
 import { company } from "@/lib/company";
@@ -12,6 +13,7 @@ import { formatPoints } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
 const nav = [
+  { href: "/connect", label: "사이트 연결" },
   { href: "/company", label: "회사소개" },
   { href: "/products", label: "제품몰" },
   { href: "/inquiry", label: "견적·문의" },
@@ -21,7 +23,11 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { user, cartCount, pointBalance } = useApp();
   const [open, setOpen] = useState(false);
-  const isAuth = pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/find-account");
+  const isAuth =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/find-account") ||
+    pathname.startsWith("/oauth2");
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-navy text-white">
@@ -37,18 +43,10 @@ export function SiteHeader() {
       </div>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded bg-sky-500 text-sm font-black">
-            NE1
-          </span>
-          <span>
-            <span className="block text-sm font-bold leading-none tracking-wide">
-              {company.nameEn}
-            </span>
-            <span className="text-[11px] text-white/60">{company.nameKo} 쇼핑몰</span>
-          </span>
+          <Ne1Logo />
         </Link>
         <SiteSearch compact className="hidden max-w-md flex-1 md:block" />
-        <nav className="hidden items-center gap-6 text-sm md:flex">
+        <nav className="hidden items-center gap-5 text-sm md:flex">
           {nav.map((item) => (
             <Link
               key={item.href}

@@ -2,7 +2,7 @@ export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
   legalName: "주식회사 엔이원텍",
-  version: "0.1.0",
+  version: "0.1.1",
   domain: "NE1-TECH.CO.KR",
   siteUrl: "https://ne1-tech.co.kr",
   tagline: "산업용 전자부품, 품목별로 바로 찾습니다.",

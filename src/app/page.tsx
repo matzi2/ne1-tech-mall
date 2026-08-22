@@ -31,7 +31,7 @@ export default function HomePage() {
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild variant="amber">
-                <Link href="/products">제품 둘러보기</Link>
+                <Link href="/connect">사이트 연결부터</Link>
               </Button>
               <Button asChild variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10">
                 <Link href="/login">로그인하고 포인트 적립</Link>
@@ -40,8 +40,8 @@ export default function HomePage() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm leading-7">
             <p className="font-semibold text-sky-200">v{company.version}에서 가능한 일</p>
+            <p>GitHub·카카오 등 사이트 연결 작업 창</p>
             <p>상품명·품번·사양 검색</p>
-            <p>파일·사진·문서로 상품 등록</p>
             <p>무통장 송금 / 신용·체크카드 결제</p>
             <p>회원 구매 시 포인트 적립·사용</p>
           </div>
