@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GitHubConnectState } from "@/lib/github-types";
-import { openExternalWindow } from "@/lib/work-window";
 
 const idle: GitHubConnectState = {
   status: "idle",
   userCode: null,
   verificationUri: "https://github.com/login/device",
+  verificationUriComplete: null,
   interval: 5,
   expiresAt: null,
   login: null,
@@ -42,15 +42,8 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
     setError(next.status === "error" ? next.message ?? "연결에 실패했습니다." : "");
   }, []);
 
-  const openGitHub = useCallback((uri: string) => {
-    return openExternalWindow(uri || "https://github.com/login/device", "github-device", {
-      width: 920,
-      height: 800,
-    });
-  }, []);
-
   const start = useCallback(
-    async (force = false, openWindow = false) => {
+    async (force = false) => {
       setBusy(true);
       setError("");
       try {
@@ -61,19 +54,13 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         });
         const next = (await response.json()) as GitHubConnectState;
         apply(next);
-        if (openWindow && next.verificationUri) {
-          const opened = openGitHub(next.verificationUri);
-          if (!opened) {
-            setError("팝업이 막혀 있습니다. 아래 github.com/login/device 링크를 눌러 주세요.");
-          }
-        }
       } catch {
         setError("GitHub 연결을 시작하지 못했습니다.");
       } finally {
         setBusy(false);
       }
     },
-    [apply, isPrivate, openGitHub, repoName],
+    [apply, isPrivate, repoName],
   );
 
   useEffect(() => {
@@ -96,7 +83,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
     if (!autoStart || !loaded || startedRef.current) return;
     if (state.status === "published" || state.status === "authorized") return;
     startedRef.current = true;
-    void start(false, false);
+    void start(false);
   }, [autoStart, loaded, start, state.status]);
 
   useEffect(() => {
@@ -145,7 +132,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         <p className="text-xs font-semibold tracking-wide text-[#0046CA]">1단계 · GITHUB 연결 설정</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">GitHub 저장소 연결</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          지금 이 화면에서 GitHub에 로그인합니다. 코드가 보이면 열린 GitHub 창에 입력하고 Authorize를 누르세요.
+          지금 이 Chrome 작업창에서 GitHub에 연결합니다. 코드가 보이면 토큰을 붙여 넣거나 Authorize를 완료하세요.
           끝나면 <code>{repoName || "ne1-tech-mall"}</code> 저장소로 소스가 올라갑니다.
         </p>
 
@@ -155,28 +142,23 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
             {state.userCode ?? (busy ? "발급 중…" : "---- ----")}
           </p>
           <p className="mt-3 text-sm text-white/70">
-            {state.message ?? "GitHub 로그인 창을 열고 이 코드를 입력하세요."}
+            {state.message ?? "이 Chrome 작업창에서 코드를 확인하고 연결하세요."}
           </p>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" size="lg" onClick={() => void start(true, true)} disabled={busy}>
-            GitHub 로그인 창 열기
+          <Button type="button" size="lg" onClick={() => void start(true)} disabled={busy}>
+            코드 다시 발급
           </Button>
           <Button type="button" variant="outline" size="lg" onClick={() => void copyCode()} disabled={!state.userCode}>
             {copied ? "코드를 복사했습니다" : "코드 복사"}
           </Button>
-          <Button asChild variant="outline" size="lg">
-            <a href={state.verificationUri || "https://github.com/login/device"} target="_blank" rel="noreferrer">
-              github.com/login/device
-            </a>
-          </Button>
         </div>
 
         <ol className="mt-5 list-decimal space-y-1 pl-5 text-sm text-slate-600">
-          <li>GitHub 창이 열리면 위 코드를 입력합니다.</li>
-          <li>계정으로 로그인한 뒤 Authorize GitHub CLI 를 누릅니다.</li>
-          <li>이 화면이 연결됨으로 바뀌면 저장소 푸시까지 진행됩니다.</li>
+          <li>위 코드를 복사합니다.</li>
+          <li>같은 Chrome 작업창의 토큰 입력란에 repo 권한 토큰을 붙여 넣습니다.</li>
+          <li>연결됨으로 바뀌면 저장소 푸시까지 진행됩니다.</li>
         </ol>
 
         {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
@@ -247,20 +229,6 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
             토큰으로 저장소 연결
           </Button>
         </form>
-        <Button
-          type="button"
-          variant="ghost"
-          className="mt-2 px-0 text-[#0046CA]"
-          onClick={() =>
-            openExternalWindow(
-              "https://github.com/settings/tokens/new?scopes=repo,read:org,workflow&description=NE1-TECH%20mall",
-              "github-token",
-              { width: 960, height: 820 },
-            )
-          }
-        >
-          GitHub 토큰 발급 창 열기
-        </Button>
       </section>
     </div>
   );

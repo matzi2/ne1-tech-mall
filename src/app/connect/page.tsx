@@ -10,7 +10,6 @@ import {
   type ConnectionId,
   type LocalConnectionState,
 } from "@/lib/connections";
-import { openWorkWindow } from "@/lib/work-window";
 import { Button } from "@/components/ui/button";
 import type { GitHubConnectState } from "@/lib/github-types";
 import { company } from "@/lib/company";
@@ -71,28 +70,19 @@ export default function ConnectHubPage() {
     }
   }, []);
 
-  function openConnection(id: ConnectionId) {
-    const item = siteConnections.find((entry) => entry.id === id);
-    if (!item) return;
-    openWorkWindow(item.href, item.windowName, { width: item.width, height: item.height });
-  }
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <p className="text-sm font-semibold tracking-wide text-[#0046CA]">SITE CONNECTIONS</p>
       <h1 className="mt-2 text-3xl font-bold text-[#000092]">사이트 연결 작업실</h1>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-        지금은 GitHub 연결 설정부터 진행합니다. GitHub가 붙으면 카카오·카드·송금 순으로 이어갑니다.
+        어느 대화창에서 Preview를 열어도 같은 인앱 브라우저입니다. GitHub부터 이 화면에서 연결합니다.
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         <Button asChild>
-          <Link href="/connect/github">GitHub 연결 설정</Link>
+          <Link href="/connect/github">GitHub 연결</Link>
         </Button>
-        <Button type="button" variant="outline" onClick={() => openConnection("kakao")}>
-          카카오 로그인 창
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href="/connect/github">이 탭에서 GitHub 작업</Link>
+        <Button asChild variant="outline">
+          <Link href="/oauth2/authorization/kakao">카카오 로그인</Link>
         </Button>
       </div>
 
@@ -121,12 +111,9 @@ export default function ConnectHubPage() {
                 </span>
               </div>
               <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{item.purpose}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button type="button" size="sm" onClick={() => openConnection(item.id)}>
-                  {item.actionLabel}
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href={item.href}>이 탭에서 작업</Link>
+              <div className="mt-4">
+                <Button asChild size="sm">
+                  <Link href={item.href}>{item.actionLabel}</Link>
                 </Button>
               </div>
             </article>

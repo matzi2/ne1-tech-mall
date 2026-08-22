@@ -1,8 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { company } from "@/lib/company";
-import { openExternalWindow } from "@/lib/work-window";
 
 export default function OriginConnectPage() {
   return (
@@ -19,13 +17,7 @@ export default function OriginConnectPage() {
           <li>브랜치: main</li>
           <li>원격 이름: origin (Cursor) / github (연결 후)</li>
         </ul>
-        <Button
-          type="button"
-          className="mt-5"
-          onClick={() => openExternalWindow("https://cursor.com", "cursor-origin", { width: 1100, height: 800 })}
-        >
-          Cursor 열기
-        </Button>
+        <p className="mt-5 text-sm text-slate-500">GitHub 연결은 상단 GitHub 탭에서 이 인앱 브라우저로 진행합니다.</p>
       </div>
     </div>
   );

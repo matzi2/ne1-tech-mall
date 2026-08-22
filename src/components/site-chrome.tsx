@@ -1,26 +1,17 @@
 "use client";
 
 import { Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { InAppBrowser } from "@/components/in-app-browser";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-
-function isWorkSurface(pathname: string, popup: boolean) {
-  if (popup) return true;
-  if (pathname.startsWith("/connect/github")) return true;
-  if (pathname.startsWith("/oauth2")) return true;
-  if (pathname.startsWith("/redirect")) return true;
-  return false;
-}
+import { isWorkSurface } from "@/lib/in-app-browser";
 
 function ChromeInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const params = useSearchParams();
-  const popup = params.get("popup") === "1";
-  const work = isWorkSurface(pathname, popup);
 
-  if (work) {
-    return <div className="min-h-full bg-[#f5f6f8]">{children}</div>;
+  if (isWorkSurface(pathname)) {
+    return <InAppBrowser>{children}</InAppBrowser>;
   }
 
   return (
@@ -36,11 +27,10 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <Suspense
       fallback={
-        <>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </>
+        <div className="min-h-screen bg-[#e8eaed]">
+          <div className="h-24 border-b border-[#c4c7cc] bg-[#e8eaed]" />
+          <div className="bg-[#f5f6f8]">{children}</div>
+        </div>
       }
     >
       <ChromeInner>{children}</ChromeInner>

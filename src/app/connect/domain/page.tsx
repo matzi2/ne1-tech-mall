@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CONNECTIONS_STORAGE, type LocalConnectionState } from "@/lib/connections";
 import { company } from "@/lib/company";
-import { openExternalWindow } from "@/lib/work-window";
 
 export default function DomainConnectPage() {
   const [lookup, setLookup] = useState("조회 전");
@@ -35,13 +34,7 @@ export default function DomainConnectPage() {
           <p>사이트 URL: {company.siteUrl}</p>
           <p>상태: {lookup}</p>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            type="button"
-            onClick={() => openExternalWindow(company.siteUrl, "ne1-domain-live", { width: 1100, height: 800 })}
-          >
-            공식 도메인 창 열기
-          </Button>
+        <div className="mt-4">
           <Button type="button" variant="navy" onClick={mark}>
             도메인 점검 기록
           </Button>

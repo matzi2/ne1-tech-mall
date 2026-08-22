@@ -11,13 +11,15 @@ npm install
 npm run dev
 ```
 
-브라우저에서 `http://127.0.0.1:43177` 로 접속합니다. 사이트 연결 작업실은 `/connect` 입니다.
+브라우저에서 `http://127.0.0.1:43177` 로 접속합니다. 사이트 연결 작업창은 `http://127.0.0.1:43177/connect/github` 입니다.
+
+어느 대화에서 Preview를 열어도 같은 Chrome 작업창이 보입니다. 숨은 브라우저·팝업은 쓰지 않습니다.
 
 ## 사이트 연결
 
-`/connect` 에서 GitHub, 카카오 로그인, 카카오 디벨로퍼스, 카드 결제, 기업은행 송금, CI, 도메인을 **작업 창**으로 열고 직접 로그인·설정합니다.
+`/connect/github` 가 Chrome 모양의 인앱 작업창입니다. 상단 탭에서 GitHub, 카카오, 카드, 송금 등을 같은 창에서 전환합니다.
 
-- GitHub: 장치 코드 → `github.com/login/device` 창에서 승인 → `ne1-tech-mall` 저장소 생성·푸시
+- GitHub: 장치 코드 확인 후 같은 창에 토큰을 붙여 넣어 `ne1-tech-mall` 저장소 생성·푸시
 - 카카오: MATCHDOC과 같은 `/oauth2/authorization/kakao` → `/redirect?accesstoken=` → `localStorage.accessToken`
 
 카카오 REST 키와 카드사 PG 키가 없으면 작업용 화면으로 진행합니다. 키를 넣으면 실제 카카오 로그인으로 넘어갑니다.

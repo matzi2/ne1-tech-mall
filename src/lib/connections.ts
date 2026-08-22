@@ -34,7 +34,7 @@ export const siteConnections: SiteConnection[] = [
     width: 640,
     height: 820,
     required: true,
-    actionLabel: "GitHub 연결 창 열기",
+    actionLabel: "GitHub 연결",
   },
   {
     id: "kakao",
@@ -46,7 +46,7 @@ export const siteConnections: SiteConnection[] = [
     width: 480,
     height: 740,
     required: true,
-    actionLabel: "카카오 로그인 창 열기",
+    actionLabel: "카카오 로그인",
   },
   {
     id: "kakao-developers",
@@ -59,7 +59,7 @@ export const siteConnections: SiteConnection[] = [
     width: 720,
     height: 820,
     required: false,
-    actionLabel: "디벨로퍼스 작업 창 열기",
+    actionLabel: "디벨로퍼스에서 작업",
   },
   {
     id: "card",
@@ -71,7 +71,7 @@ export const siteConnections: SiteConnection[] = [
     width: 520,
     height: 760,
     required: true,
-    actionLabel: "카드 결제 창 열기",
+    actionLabel: "카드 결제",
   },
   {
     id: "bank",
@@ -83,7 +83,7 @@ export const siteConnections: SiteConnection[] = [
     width: 520,
     height: 700,
     required: true,
-    actionLabel: "송금 안내 창 열기",
+    actionLabel: "송금 안내",
   },
   {
     id: "ci",
@@ -96,7 +96,7 @@ export const siteConnections: SiteConnection[] = [
     width: 960,
     height: 800,
     required: false,
-    actionLabel: "CI 비교 창 열기",
+    actionLabel: "CI 비교",
   },
   {
     id: "domain",
@@ -108,7 +108,7 @@ export const siteConnections: SiteConnection[] = [
     width: 640,
     height: 720,
     required: false,
-    actionLabel: "도메인 상태 창 열기",
+    actionLabel: "도메인 상태",
   },
   {
     id: "origin",
@@ -120,7 +120,7 @@ export const siteConnections: SiteConnection[] = [
     width: 640,
     height: 640,
     required: false,
-    actionLabel: "Origin 상태 창 열기",
+    actionLabel: "Origin 상태",
   },
 ];
 

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Ne1Logo } from "@/components/ne1-logo";
 import { brand } from "@/lib/brand";
 import { CONNECTIONS_STORAGE, type LocalConnectionState } from "@/lib/connections";
-import { openExternalWindow } from "@/lib/work-window";
 import { useState } from "react";
 
 const swatches = [
@@ -29,7 +28,7 @@ export default function CiConnectPage() {
         <p className="text-xs font-semibold tracking-wide text-[#0046CA]">N-ONETECH.COM</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">CI 비교 작업 창</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          엔원테크 홈페이지와 같은 남색·파랑·빨강을 쇼핑몰에 적용했습니다. 홈페이지를 옆에 열고 로고·색을 맞춰 보세요.
+          엔원테크 홈페이지와 같은 남색·파랑·빨강을 이 인앱 브라우저에서 확인합니다.
         </p>
         <div className="mt-5 flex h-20 items-center rounded-xl bg-[#000092] px-5">
           <Ne1Logo />
@@ -45,13 +44,7 @@ export default function CiConnectPage() {
           ))}
         </div>
         <p className="mt-4 text-sm text-slate-600">서체: Pretendard · 영문 Montserrat</p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Button
-            type="button"
-            onClick={() => openExternalWindow("https://n-onetech.com/", "n-onetech", { width: 1200, height: 860 })}
-          >
-            n-onetech.com 열기
-          </Button>
+        <div className="mt-5">
           <Button type="button" variant="navy" onClick={markReviewed}>
             CI 확인 완료
           </Button>

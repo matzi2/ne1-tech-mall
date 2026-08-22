@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { brand } from "@/lib/brand";
 import { company, demoAccounts } from "@/lib/company";
-import { openWorkWindow } from "@/lib/work-window";
 
 function LoginForm() {
   const router = useRouter();
@@ -37,7 +36,7 @@ function LoginForm() {
         <p className="text-sm font-semibold text-[#0046CA]">{company.domain}</p>
         <h1 className="mt-2 text-2xl font-bold text-navy">로그인</h1>
         <p className="mt-2 text-sm text-slate-500">
-          카카오는 MATCHDOC과 같은 방식으로 별도 로그인 창이 열립니다. 이메일 로그인도 이 화면에서 바로 테스트할 수 있습니다.
+          카카오는 이 인앱 브라우저에서 MATCHDOC과 같은 OAuth 화면으로 이어집니다. 이메일 로그인도 바로 테스트할 수 있습니다.
         </p>
         <button
           type="button"
@@ -45,14 +44,10 @@ function LoginForm() {
           style={{ background: brand.yellow, color: brand.kakaoBrown }}
           onClick={() => {
             const redirect = `${window.location.origin}/redirect`;
-            openWorkWindow(
-              `/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirect)}`,
-              "ne1-kakao",
-              { width: 480, height: 740 },
-            );
+            router.push(`/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirect)}`);
           }}
         >
-          카카오 로그인 창 열기
+          카카오 로그인
         </button>
         <p className="mt-2 text-center text-xs text-slate-400">
           OAuth2 · /oauth2/authorization/kakao → /redirect?accesstoken=

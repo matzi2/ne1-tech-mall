@@ -27,6 +27,7 @@ const emptyState = (): StoredState => ({
   status: "idle",
   userCode: null,
   verificationUri: "https://github.com/login/device",
+  verificationUriComplete: null,
   interval: 5,
   expiresAt: null,
   login: null,
@@ -102,6 +103,7 @@ export async function startGitHubDeviceFlow(input: GitHubConnectInput = {}): Pro
     device_code?: string;
     user_code?: string;
     verification_uri?: string;
+    verification_uri_complete?: string;
     expires_in?: number;
     interval?: number;
     error?: string;
@@ -120,13 +122,16 @@ export async function startGitHubDeviceFlow(input: GitHubConnectInput = {}): Pro
     status: "pending",
     userCode: data.user_code,
     verificationUri: data.verification_uri ?? "https://github.com/login/device",
+    verificationUriComplete:
+      data.verification_uri_complete ??
+      `https://github.com/login/device?user_code=${encodeURIComponent(data.user_code)}`,
     interval: data.interval ?? 5,
     expiresAt: new Date(Date.now() + (data.expires_in ?? 900) * 1000).toISOString(),
     startedAt: new Date().toISOString(),
     deviceCode: data.device_code,
     repoName,
     isPrivate,
-    message: "GitHub 로그인 창에 아래 코드를 입력하세요.",
+    message: "보이는 Chrome에서 github.com/login/device 를 연 뒤 이 코드를 입력하세요.",
   };
   await writeState(next);
   return publicView(next);

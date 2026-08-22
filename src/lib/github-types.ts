@@ -2,6 +2,7 @@ export type GitHubConnectState = {
   status: "idle" | "pending" | "authorized" | "published" | "error";
   userCode: string | null;
   verificationUri: string;
+  verificationUriComplete: string | null;
   interval: number;
   expiresAt: string | null;
   login: string | null;

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CONNECTIONS_STORAGE, KAKAO_KEYS_STORAGE, type KakaoKeys, type LocalConnectionState } from "@/lib/connections";
 import { company } from "@/lib/company";
-import { openExternalWindow } from "@/lib/work-window";
 
 const empty: KakaoKeys = {
   restApiKey: "",
@@ -43,20 +42,8 @@ export default function KakaoDevelopersPage() {
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">카카오 디벨로퍼스 작업 창</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           카카오 콘솔에서 앱을 만든 뒤 Redirect URI에 <code>{company.siteUrl}/redirect</code> 와 이 미리보기 주소를 등록하세요.
-          키를 저장하면 로그인 창이 실제 kauth.kakao.com 으로 넘어갈 수 있습니다.
+          REST API 키를 이 인앱 브라우저에 저장하면 카카오 로그인이 실제 검수 흐름으로 바뀝니다.
         </p>
-        <Button
-          type="button"
-          className="mt-4"
-          onClick={() =>
-            openExternalWindow("https://developers.kakao.com/console/app", "kakao-console", {
-              width: 1100,
-              height: 820,
-            })
-          }
-        >
-          카카오 디벨로퍼스 콘솔 열기
-        </Button>
         <form className="mt-6 space-y-4" onSubmit={save}>
           <div>
             <Label htmlFor="rest">REST API 키</Label>
@@ -88,7 +75,7 @@ export default function KakaoDevelopersPage() {
           <Button type="submit" variant="navy">
             이 브라우저에 키 저장
           </Button>
-          {saved ? <p className="text-sm text-emerald-700">저장했습니다. 카카오 로그인 창을 다시 열어 주세요.</p> : null}
+          {saved ? <p className="text-sm text-emerald-700">저장했습니다. 상단 카카오 탭에서 다시 로그인하세요.</p> : null}
         </form>
         <p className="mt-4 text-xs text-slate-500">
           Client Secret은 서버 환경변수에만 둡니다. 이 화면에는 붙여 넣지 마세요.
