@@ -145,6 +145,7 @@ export function GabiaLoginForm() {
     setState(next);
     setAuthKey("");
     if (next.status === "ready" || next.status === "applied") setPassword("");
+    if (next.lastAction === "verify_fail") setAuthKey("");
     setBusy(false);
   }
 
@@ -191,9 +192,9 @@ export function GabiaLoginForm() {
           </p>
           <p className="text-sm leading-6 text-slate-700">
             {state.lastAction === "verify_fail"
-              ? "가비아가 방금 숫자를 거절했습니다. DNS는 아직 안 올라갔습니다. 문자 속 숫자만 다시 넣거나, 인증번호를 다시 받으세요."
+              ? `가비아가 숫자를 거절했습니다. ${state.sendCount}번째까지 보낸 문자 중 예전 번호는 무효입니다. 비밀번호를 넣고 [휴대전화로 인증번호 다시 받기]를 누른 다음, 새로 온 문자 숫자만 넣으세요.`
               : state.hasForeignToken
-                ? "인증번호가 준비됐습니다. 문자에 적힌 숫자만 넣고 확인하세요."
+                ? `인증번호가 준비됐습니다. ${state.sendCount}번째로 받은 문자의 숫자만 넣으세요. 이전 문자는 쓰지 마세요.`
                 : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
           </p>
           <div>

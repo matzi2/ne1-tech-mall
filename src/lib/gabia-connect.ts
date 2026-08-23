@@ -107,11 +107,14 @@ async function gabiaFetch(state: StoredState, url: string, init: RequestInit = {
 function extractAuthToken(data: unknown, depth = 0): string | null {
   if (depth > 4 || data == null || typeof data !== "object") return null;
   const record = data as Record<string, unknown>;
-  for (const key of ["auth_token", "authToken"]) {
-    const value = record[key];
-    if (typeof value === "string" && value.length > 8) return value;
+  const nested = record.data && typeof record.data === "object" ? (record.data as Record<string, unknown>) : null;
+  for (const bag of [nested, record]) {
+    if (!bag) continue;
+    for (const key of ["auth_token", "authToken"]) {
+      const value = bag[key];
+      if (typeof value === "string" && value.length > 8) return value;
+    }
   }
-  if (record.data) return extractAuthToken(record.data, depth + 1);
   return null;
 }
 
@@ -498,7 +501,7 @@ export async function gabiaForeignVerify(input: {
     state.status = "foreign";
     state.lastAction = "verify_fail";
     state.message =
-      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 가장 마지막 문자 숫자만 넣거나, 인증번호를 다시 받으세요.`;
+      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 이미 보낸 ${state.sendCount}통 중 이전 문자는 쓰지 마세요. [인증번호 다시 받기]를 누른 뒤, 새로 온 숫자만 넣으세요.`;
     await save(state);
     return publicView(state);
   }
