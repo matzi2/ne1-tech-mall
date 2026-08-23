@@ -143,7 +143,7 @@ export async function loginWithUsername(input: GitHubConnectInput = {}): Promise
       next.repoUrl = `https://github.com/${login}/${repoName}.git`;
       next.status = "authorized";
     }
-    next.message = `${login}으로 로그인됐습니다.`;
+    next.message = `${login} 계정으로 로그인됐습니다.`;
     await writeState(next);
   } catch (error) {
     next.status = "error";
