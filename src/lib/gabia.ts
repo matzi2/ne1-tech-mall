@@ -1,4 +1,5 @@
 import { company } from "@/lib/company";
+import { HOSTING_WAN_IPV4 } from "@/lib/hosting";
 
 export const GABIA_CHECKLIST_STORAGE = "ne1-gabia-dns-v014";
 
@@ -20,8 +21,8 @@ export const gabiaConsole = {
     "가비아 홈페이지에 로그인합니다. 아이디·비밀번호·보안 문자를 입력합니다.",
     "상단 [서비스 관리]를 엽니다.",
     "[DNS 관리툴]을 엽니다.",
-    `${company.apex} 을 체크한 뒤 [DNS 설정]을 누릅니다.`,
-    "하단 [+ 레코드 추가]로 아래 값을 넣고 [확인]한 다음, 반드시 상단 [저장]을 누릅니다.",
+    `${company.apex} 을 체크한 뒤 [DNS 설정]을 누릅니다. A(@)가 ${HOSTING_WAN_IPV4} 인지 확인하고, 다르면 그 값으로 고친 뒤 상단 [저장]을 누릅니다. www·MX·SPF·NS는 그대로 둡니다.`,
+    "하단 [+ 레코드 추가]는 A(@)가 없을 때만 씁니다. 넣은 뒤에는 반드시 상단 [저장]을 누릅니다.",
   ],
 };
 
@@ -47,8 +48,8 @@ export function gabiaRecords(ipv4 = ""): GabiaRecord[] {
       type: "A",
       value: ip,
       ttl: company.dns.ttl,
-      action: ip ? "add" : "needs-ip",
-      note: "원 도메인 접속용. 호스트 @, 값은 숫자 IP만 넣습니다.",
+      action: ip && ip === HOSTING_WAN_IPV4 ? "keep" : ip ? "add" : "needs-ip",
+      note: ip === HOSTING_WAN_IPV4 ? "공개 DNS에 이미 이 값입니다. 가비아 콘솔에서 같은지만 확인하세요." : "원 도메인 접속용. 호스트 @, 값은 숫자 IP만 넣습니다.",
     },
     {
       id: "cname-www",

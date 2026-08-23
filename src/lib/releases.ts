@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.23",
+    date: "2026-08-23",
+    title: "가비아 DNS 작업창",
+    items: [
+      "DNS 관리툴을 기본으로 열고 A(@) 175.123.135.188 을 확인",
+      "www·MX·SPF·NS는 유지. 공개 DNS가 같으면 다시 넣지 않음",
+    ],
+  },
+  {
     version: "0.2.22",
     date: "2026-08-23",
     title: "NAS Docker 컨테이너 기동",

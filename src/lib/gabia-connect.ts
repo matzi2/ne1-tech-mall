@@ -562,7 +562,7 @@ function newGabiaRecord(type: string, host: string, data: string, extra: Record<
     type,
     host,
     data,
-    ttl: "1800",
+    ttl: company.dns.ttl,
     services_idx: extra.services_idx ?? "",
     service: "",
     protocol: "",
