@@ -114,8 +114,8 @@ export default function ProductDetailPage() {
           </p>
         ) : null}
         <div className="mt-8">
-          <h2 className="font-semibold text-navy">사이트별 가격·재고</h2>
-          <p className="mt-1 text-sm text-slate-500">같은 품번을 다른 사이트와 맞춰 봅니다.</p>
+          <h2 className="font-semibold text-navy">Digi-Key · Mouser 가격·재고</h2>
+          <p className="mt-1 text-sm text-slate-500">같은 품번을 Digi-Key와 Mouser 기준으로 맞춰 봅니다.</p>
           <div className="mt-3">
             <SiteOfferTable product={product} compact />
           </div>

@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.10",
+    date: "2026-08-23",
+    title: "Digi-Key · Mouser 기준 비교",
+    items: [
+      "사이트 비교를 Digi-Key와 Mouser만 기준으로 표시",
+      "검색할 때마다 두 사이트 시세를 다시 조회",
+    ],
+  },
+  {
     version: "0.2.9",
     date: "2026-08-23",
     title: "현재 기능 배포",

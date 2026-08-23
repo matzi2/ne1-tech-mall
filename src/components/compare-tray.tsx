@@ -40,7 +40,7 @@ export function CompareTray() {
             비우기
           </Button>
           <Button asChild size="sm" variant="navy">
-            <Link href={`/compare?slugs=${compare.slugs.join(",")}`}>사양·사이트 비교</Link>
+            <Link href={`/compare?slugs=${compare.slugs.join(",")}`}>사양·시세 비교</Link>
           </Button>
         </div>
       </div>

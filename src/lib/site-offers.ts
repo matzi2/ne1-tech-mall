@@ -2,12 +2,12 @@ import type { CatalogProduct } from "@/lib/catalog";
 import { stockLabel } from "@/lib/compare";
 import { company } from "@/lib/company";
 import { formatPrice } from "@/lib/format";
-import type { ProductCategory } from "@/lib/products";
 
 export type VendorKind = "self" | "reference";
+export type OfferSource = "live" | "local" | "unavailable";
 
 export type VendorSite = {
-  id: string;
+  id: "ne1" | "digikey" | "mouser";
   name: string;
   region: string;
   kind: VendorKind;
@@ -15,7 +15,7 @@ export type VendorSite = {
 };
 
 export type SiteOffer = {
-  siteId: string;
+  siteId: VendorSite["id"];
   siteName: string;
   region: string;
   kind: VendorKind;
@@ -27,15 +27,26 @@ export type SiteOffer = {
   available: boolean;
   note: string;
   href: string;
+  source: OfferSource;
+  updatedAt?: string;
+  partNumber?: string;
 };
 
-const LOCAL_ONLY = new Set<ProductCategory>([
-  "breaker",
-  "elcb",
-  "contactor",
-  "surge",
-  "terminal",
-]);
+export type OfferLookupItem = {
+  slug: string;
+  sku: string;
+  name: string;
+  price: number | null;
+  stock: CatalogProduct["stock"];
+  leadTime: string;
+};
+
+export type OfferLookupResult = {
+  slug: string;
+  keyword: string;
+  updatedAt: string;
+  offers: SiteOffer[];
+};
 
 export const vendorSites: VendorSite[] = [
   {
@@ -59,113 +70,87 @@ export const vendorSites: VendorSite[] = [
     kind: "reference",
     searchUrl: (keyword) => `https://kr.mouser.com/c/?q=${encodeURIComponent(keyword)}`,
   },
-  {
-    id: "lcsc",
-    name: "LCSC",
-    region: "해외",
-    kind: "reference",
-    searchUrl: (keyword) => `https://www.lcsc.com/search?q=${encodeURIComponent(keyword)}`,
-  },
 ];
 
-export function lookupKeyword(product: CatalogProduct) {
+export function lookupKeyword(product: Pick<CatalogProduct, "sku" | "name">) {
   const tail = product.sku.replace(/^NE1-/, "").replace(/-/g, " ");
   const token = product.name.match(/[A-Z0-9][A-Z0-9.\-]{2,}/i)?.[0];
   return token || tail || product.sku;
 }
 
-function hashSku(sku: string, salt: string) {
-  const text = `${sku}:${salt}`;
-  let hash = 0;
-  for (const ch of text) hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
-  return hash;
+export function toLookupItem(product: CatalogProduct): OfferLookupItem {
+  return {
+    slug: product.slug,
+    sku: product.sku,
+    name: product.name,
+    price: product.price,
+    stock: product.stock,
+    leadTime: product.leadTime,
+  };
 }
 
-function referenceOffer(product: CatalogProduct, site: VendorSite): SiteOffer {
-  const keyword = lookupKeyword(product);
-  const href = site.searchUrl(keyword);
+export function localNe1Offer(product: OfferLookupItem, updatedAt: string): SiteOffer {
+  const qty = product.stock === "made-to-order" ? 0 : product.stock === "limited" ? 8 : 120;
+  return {
+    siteId: "ne1",
+    siteName: company.nameEn,
+    region: "국내",
+    kind: "self",
+    price: product.price,
+    stock: product.stock,
+    stockLabel:
+      product.stock === "made-to-order" ? "주문생산" : `${stockLabel(product.stock)} ${qty.toLocaleString("ko-KR")}개`,
+    qty,
+    leadTime: product.leadTime,
+    available: product.price !== null,
+    note: "이 몰 판매가",
+    href: `/products/${product.slug}`,
+    source: "live",
+    updatedAt,
+    partNumber: product.sku,
+  };
+}
 
-  if (LOCAL_ONLY.has(product.category)) {
-    return {
-      siteId: site.id,
-      siteName: site.name,
-      region: site.region,
-      kind: site.kind,
-      price: null,
-      stock: "none",
-      stockLabel: "미취급",
-      qty: 0,
-      leadTime: "—",
-      available: false,
-      note: "이 품목은 국내 전기부품 중심으로 취급합니다.",
-      href,
-    };
-  }
+export function vendorById(id: VendorSite["id"]) {
+  const site = vendorSites.find((item) => item.id === id);
+  if (!site) throw new Error(`unknown vendor ${id}`);
+  return site;
+}
 
-  if (product.price === null) {
-    return {
-      siteId: site.id,
-      siteName: site.name,
-      region: site.region,
-      kind: site.kind,
-      price: null,
-      stock: "made-to-order",
-      stockLabel: "문의",
-      qty: 0,
-      leadTime: "확인 필요",
-      available: false,
-      note: "참고 시세. 해당 사이트에서 확인하세요.",
-      href,
-    };
-  }
-
-  const n = hashSku(product.sku, site.id);
-  const stockRoll = n % 10;
-  const stock = stockRoll === 0 ? "none" : stockRoll < 3 ? "limited" : "in-stock";
-  const factor = site.id === "lcsc" ? 0.72 + (n % 18) / 100 : 0.92 + (n % 36) / 100;
-  const price = Math.max(100, Math.round((product.price * factor) / 10) * 10);
-  const qty = stock === "none" ? 0 : stock === "limited" ? 2 + (n % 9) : 40 + (n % 380);
+export function waitingOffer(
+  site: VendorSite,
+  keyword: string,
+  note: string,
+  updatedAt: string,
+  stockLabel = "검색 중",
+): SiteOffer {
   return {
     siteId: site.id,
     siteName: site.name,
     region: site.region,
     kind: site.kind,
-    price: stock === "none" ? null : price,
-    stock,
-    stockLabel: stock === "none" ? "품절" : stock === "limited" ? `소량 ${qty}개` : `재고 ${qty.toLocaleString("ko-KR")}개`,
-    qty,
-    leadTime: stock === "none" ? "—" : stock === "limited" ? "7~14일" : "3~8일",
-    available: stock !== "none",
-    note: "참고 시세. 실시간 연동이 아닙니다.",
-    href,
+    price: null,
+    stock: "none",
+    stockLabel,
+    qty: 0,
+    leadTime: "—",
+    available: false,
+    note,
+    href: site.searchUrl(keyword),
+    source: "unavailable",
+    updatedAt,
   };
 }
 
-export function offersForProduct(product: CatalogProduct): SiteOffer[] {
-  return vendorSites.map((site) => {
-    if (site.kind === "self") {
-      const qty =
-        product.stock === "made-to-order" ? 0 : product.stock === "limited" ? 8 : 48 + (hashSku(product.sku, "ne1") % 220);
-      return {
-        siteId: site.id,
-        siteName: site.name,
-        region: site.region,
-        kind: site.kind,
-        price: product.price,
-        stock: product.stock,
-        stockLabel:
-          product.stock === "made-to-order"
-            ? "주문생산"
-            : `${stockLabel(product.stock)} ${qty.toLocaleString("ko-KR")}개`,
-        qty,
-        leadTime: product.leadTime,
-        available: product.price !== null,
-        note: "이 몰 판매가 · 바로 주문",
-        href: `/products/${product.slug}`,
-      };
-    }
-    return referenceOffer(product, site);
-  });
+export function placeholderOffers(product: CatalogProduct): SiteOffer[] {
+  const updatedAt = new Date().toISOString();
+  const keyword = lookupKeyword(product);
+  const item = toLookupItem(product);
+  return [
+    localNe1Offer(item, updatedAt),
+    waitingOffer(vendorById("digikey"), keyword, "Digi-Key 검색 대기", updatedAt),
+    waitingOffer(vendorById("mouser"), keyword, "Mouser 검색 대기", updatedAt),
+  ];
 }
 
 export function cheapestOffer(offers: SiteOffer[]) {
@@ -174,7 +159,18 @@ export function cheapestOffer(offers: SiteOffer[]) {
   return priced.reduce((min, item) => ((item.price ?? Infinity) < (min.price ?? Infinity) ? item : min));
 }
 
-export function formatOfferPrice(price: number | null, stock: SiteOffer["stock"]) {
-  if (stock === "none") return "—";
-  return formatPrice(price);
+export function formatOfferPrice(offer: SiteOffer) {
+  if (offer.price === null) return "—";
+  return formatPrice(offer.price);
+}
+
+export function formatOfferTime(iso?: string) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
