@@ -15,6 +15,7 @@ type StoredState = GabiaPublicState & {
   token: string | null;
   captchaVcid: string | null;
   foreignAuthToken: string | null;
+  verifyType: "FOREIGN" | "OTP_FOREIGN" | null;
 };
 
 function empty(): StoredState {
@@ -35,6 +36,7 @@ function empty(): StoredState {
     token: null,
     captchaVcid: null,
     foreignAuthToken: null,
+    verifyType: null,
   };
 }
 
@@ -283,6 +285,7 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
     state.userId = payload.userId;
     state.foreignChannel = null;
     state.foreignAuthToken = null;
+    state.verifyType = loginCode === "OTP_FOREIGN" ? "OTP_FOREIGN" : "FOREIGN";
     state.lastAction = "login";
     await fillForeignContacts(state, payload.userId);
     state.message =
@@ -466,7 +469,6 @@ export async function gabiaForeignVerify(input: {
     return publicView(state);
   }
 
-  const channel = state.foreignChannel ?? "sms";
   const authKey = normalizeAuthKey(input.authKey);
   if (authKey.length < 4) {
     state.status = "foreign";
@@ -482,9 +484,11 @@ export async function gabiaForeignVerify(input: {
     authKey,
     authToken: state.foreignAuthToken,
   };
+  // 가비아 공식 화면은 /verify/sms 가 아니라 /verify/FOREIGN 으로 확인합니다.
+  const verifyType = state.verifyType || "FOREIGN";
   const response = await gabiaFetch(
     state,
-    `https://member-public-api.gabia.com/v1/auth/foreign-access/verify/${channel}`,
+    `https://member-public-api.gabia.com/v1/auth/foreign-access/verify/${verifyType}`,
     {
       method: "POST",
       headers: {
