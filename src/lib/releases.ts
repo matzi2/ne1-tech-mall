@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.18",
+    date: "2026-08-23",
+    title: "관리자 NAS 개발 창",
+    items: [
+      "시놀로지 주소·아이디·비밀번호를 넣고 이 창에서 접속",
+      "접속되면 공유 폴더 목록을 표시. 비밀번호는 git에 저장하지 않음",
+    ],
+  },
+  {
     version: "0.2.17",
     date: "2026-08-23",
     title: "가비아 A 반영 후 NAS 소스 준비",

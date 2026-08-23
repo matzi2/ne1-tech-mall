@@ -124,6 +124,13 @@ export default function AdminOpsPage() {
             <Link href="/admin/github/token">토큰 창 열기</Link>
           </Button>
         </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-navy">NAS 개발 창</h2>
+          <p className="mt-1 text-sm text-slate-500">시놀로지 주소·아이디·비밀번호를 넣고 이 창에서 접속합니다.</p>
+          <Button asChild size="sm" className="mt-4">
+            <Link href="/admin/nas">NAS 창 열기</Link>
+          </Button>
+        </article>
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
