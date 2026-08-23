@@ -78,19 +78,11 @@ export default function ConnectHubPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <p className="text-sm font-semibold tracking-wide text-[#0046CA]">SITE CONNECTIONS</p>
-      <h1 className="mt-2 text-3xl font-bold text-[#000092]">운영 연결 (보관)</h1>
+      <p className="text-sm font-semibold tracking-wide text-[#0046CA]">DEV WORKBENCH</p>
+      <h1 className="mt-2 text-3xl font-bold text-[#000092]">개발 작업실</h1>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-        개발용 Chrome 작업창은 정리했습니다. 이 목록은 관리자만 봅니다.
+        시놀로지·가비아·GitHub 설정은 이 주소에서만 합니다. 쇼핑몰 헤더·푸터에는 넣지 않습니다.
       </p>
-      <div className="mt-5 flex flex-wrap gap-2">
-        <Button asChild>
-          <Link href="/login">이메일 로그인</Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/connect/github">GitHub 상태</Link>
-        </Button>
-      </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {siteConnections.map((item) => {

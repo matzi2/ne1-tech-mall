@@ -51,6 +51,11 @@ export const WORK_TABS: WorkTab[] = [
     match: (pathname) => pathname.startsWith("/connect/ci"),
   },
   {
+    href: "/connect/nas",
+    label: "시놀로지",
+    match: (pathname) => pathname.startsWith("/connect/nas"),
+  },
+  {
     href: "/connect/gabia",
     label: "가비아",
     match: (pathname) => pathname.startsWith("/connect/gabia") || pathname.startsWith("/connect/domain"),

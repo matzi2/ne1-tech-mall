@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { AdminBar } from "@/components/admin-bar";
-import { AdminGate } from "@/components/admin-gate";
 import { SiteFooter } from "@/components/site-footer";
 import { CategoryBar } from "@/components/category-bar";
 import { SiteHeader } from "@/components/site-header";
@@ -24,14 +23,16 @@ function hideCategoryBar(pathname: string) {
 function ChromeInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/connect")) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <AdminBar />
       <SiteHeader />
       {hideCategoryBar(pathname) ? null : <CategoryBar />}
-      <main className="flex-1">
-        {pathname.startsWith("/connect") ? <AdminGate>{children}</AdminGate> : children}
-      </main>
+      <main className="flex-1">{children}</main>
       <SiteFooter />
     </>
   );

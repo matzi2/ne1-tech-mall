@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.2",
+    date: "2026-08-23",
+    title: "개발 작업실 분리",
+    items: [
+      "시놀로지·가비아 설정은 /connect 전용 화면",
+      "쇼핑몰 화면에는 개발 메뉴를 붙이지 않음",
+    ],
+  },
+  {
     version: "0.2.1",
     date: "2026-08-23",
     title: "시놀로지 NAS 호스팅",

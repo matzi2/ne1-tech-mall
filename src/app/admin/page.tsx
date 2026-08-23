@@ -86,17 +86,7 @@ export default function AdminOpsPage() {
           <p className="text-xs text-slate-500">도메인</p>
           <p className="mt-1 text-lg font-bold text-navy">{domain?.live ? "A 확인됨" : "www·_dmarc 반영"}</p>
           <p className="mt-1 text-xs text-slate-500">{domainPlan.apex}</p>
-          <Link href="/connect/domain" className="mt-2 inline-block text-xs text-[#0046CA]">
-            DNS 조회
-          </Link>
-          {" · "}
-          <Link href="/connect/nas" className="mt-2 inline-block text-xs text-[#0046CA]">
-            시놀로지
-          </Link>
-          <p className="mt-1 break-all font-mono text-[11px] text-slate-500">
-            https://accounts.gabia.com/
-          </p>
-          <p className="break-all font-mono text-[11px] text-slate-500">https://dns.gabia.com/</p>
+          <p className="mt-1 text-xs text-slate-500">공식 도메인 상태만 표시합니다.</p>
         </article>
       </div>
 
