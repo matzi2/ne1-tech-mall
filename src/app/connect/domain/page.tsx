@@ -11,6 +11,7 @@ import {
   GABIA_CHECKLIST_STORAGE,
   gabiaConsole,
   gabiaCopyLine,
+  gabiaLinks,
   gabiaRecords,
   type GabiaRecord,
 } from "@/lib/gabia";
@@ -37,6 +38,7 @@ export default function DomainConnectPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
+  const [copiedLink, setCopiedLink] = useState("");
   const [checks, setChecks] = useState<boolean[]>(defaultChecks);
 
   const records = useMemo(() => gabiaRecords(settings.ipv4), [settings.ipv4]);
@@ -102,6 +104,34 @@ export default function DomainConnectPage() {
         <p className="text-xs font-semibold tracking-wide text-[#0046CA]">GABIA · DNS</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">{gabiaConsole.name}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">{gabiaConsole.notice}</p>
+
+        <ul className="mt-4 space-y-2">
+          {gabiaLinks.map((item) => (
+            <li
+              key={item.id}
+              className="flex flex-col gap-2 rounded-xl border border-[#0046CA]/20 bg-[#0046CA]/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <p className="text-xs font-semibold text-[#0046CA]">{item.label}</p>
+                <a href={item.href} className="break-all font-mono text-sm text-[#000092] underline">
+                  {item.href}
+                </a>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="navy"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(item.href);
+                  setCopiedLink(item.id);
+                  window.setTimeout(() => setCopiedLink(""), 2000);
+                }}
+              >
+                {copiedLink === item.id ? "복사됨" : "주소 복사"}
+              </Button>
+            </li>
+          ))}
+        </ul>
 
         <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
           <p>도메인: {gabiaConsole.domain}</p>

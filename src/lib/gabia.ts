@@ -2,13 +2,20 @@ import { company } from "@/lib/company";
 
 export const GABIA_CHECKLIST_STORAGE = "ne1-gabia-dns-v014";
 
+export const gabiaLinks = [
+  { id: "login", label: "가비아 로그인", href: "https://accounts.gabia.com/" },
+  { id: "home", label: "가비아 홈", href: "https://www.gabia.com/" },
+  { id: "dns", label: "DNS 관리툴", href: "https://dns.gabia.com/" },
+] as const;
+
 export const gabiaConsole = {
   name: "가비아 DNS 관리툴",
   domain: company.apex,
   toolUrl: "https://dns.gabia.com/",
-  loginUrl: "https://www.gabia.com/",
+  loginUrl: "https://accounts.gabia.com/",
+  homeUrl: "https://www.gabia.com/",
   notice:
-    "가비아 로그인은 보안 문자가 있어 이 환경에서 계정에 직접 쓸 수 없습니다. 아래 값을 가비아 DNS 관리툴에 그대로 넣으면 됩니다.",
+    "가비아 주소입니다. Preview 안에서는 가비아 화면이 막힐 수 있으니, 주소를 복사해 보스 브라우저에서 여세요.",
   steps: [
     "가비아 홈페이지에 로그인합니다. 아이디·비밀번호·보안 문자를 입력합니다.",
     "상단 [서비스 관리]를 엽니다.",

@@ -112,6 +112,11 @@ export default function ConnectHubPage() {
                 </span>
               </div>
               <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{item.purpose}</p>
+              {item.id === "domain" ? (
+                <p className="mt-2 break-all font-mono text-xs text-[#0046CA]">
+                  https://accounts.gabia.com/ · https://dns.gabia.com/
+                </p>
+              ) : null}
               <div className="mt-4">
                 <Button asChild size="sm">
                   <Link href={item.href}>{item.actionLabel}</Link>

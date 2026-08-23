@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { company } from "@/lib/company";
+import { gabiaLinks } from "@/lib/gabia";
 
 export function SiteFooter() {
   return (
@@ -19,6 +20,11 @@ export function SiteFooter() {
           <Link href="/connect/domain" className="block hover:text-white">
             도메인 · DNS
           </Link>
+          {gabiaLinks.map((item) => (
+            <a key={item.id} href={item.href} className="block hover:text-white">
+              {item.label}
+            </a>
+          ))}
           <Link href="/products" className="block hover:text-white">
             제품몰
           </Link>
