@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.9",
+    date: "2026-08-23",
+    title: "현재 기능 배포",
+    items: [
+      "스마트 검색, BOM, 가입·탈퇴, 사이트별 가격·재고 비교까지 포함",
+      "시놀로지 컨테이너 이미지를 이 버전에 맞춤",
+    ],
+  },
+  {
     version: "0.2.8",
     date: "2026-08-23",
     title: "사이트별 가격·재고 비교",

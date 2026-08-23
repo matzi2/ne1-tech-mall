@@ -178,7 +178,6 @@ function textOf(product: CatalogProduct) {
   return [
     product.name,
     product.sku,
-    product.manufacturer ?? "",
     product.summary,
     product.description,
     product.leadTime,

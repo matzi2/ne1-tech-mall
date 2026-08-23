@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.2.8** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.2.9** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -73,6 +73,9 @@ Preview는 쇼핑몰 홈입니다. 시놀로지·가비아 같은 개발 작업�
 sudo mkdir -p /volume1/docker/ne1-tech-mall
 sudo git clone https://github.com/matzi2/ne1-tech-mall.git /volume1/docker/ne1-tech-mall
 cd /volume1/docker/ne1-tech-mall
+sudo git fetch origin
+sudo git checkout main
+sudo git pull origin main
 sudo docker compose up -d --build
 ```
 

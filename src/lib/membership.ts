@@ -24,8 +24,9 @@ export function daysUntil(iso?: string) {
   return Math.max(0, Math.ceil((Date.parse(iso) - Date.now()) / (24 * 60 * 60 * 1000)));
 }
 
-export function isPurgeDue(member: Pick<MemberRecord, "status" | "purgeAt">) {
-  return member.status === "withdrawn" && Boolean(member.purgeAt) && Date.parse(member.purgeAt!) <= Date.now();
+export function isPurgeDue(member: { status?: MemberStatus; purgeAt?: string }) {
+  if (member.status !== "withdrawn" || !member.purgeAt) return false;
+  return Date.parse(member.purgeAt) <= Date.now();
 }
 
 export function formatMemberDate(iso?: string) {
