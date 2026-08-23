@@ -7,16 +7,27 @@ import { Button } from "@/components/ui/button";
 import { ADMIN_EMAIL, company, isAdmin } from "@/lib/company";
 import { releases } from "@/lib/releases";
 import { formatPrice } from "@/lib/format";
+import { domainPlan } from "@/lib/dns";
 import type { GitHubConnectState } from "@/lib/github-types";
+
+type DomainStatus = {
+  live: boolean;
+  message: string;
+};
 
 export default function AdminOpsPage() {
   const { user, ready, orders, catalog, extras, users, confirmTransfer } = useApp();
   const [github, setGithub] = useState<GitHubConnectState | null>(null);
+  const [domain, setDomain] = useState<DomainStatus | null>(null);
 
   useEffect(() => {
     fetch("/api/connect/github/status")
       .then((response) => response.json())
       .then((next: GitHubConnectState) => setGithub(next))
+      .catch(() => undefined);
+    fetch("/api/connect/domain/status")
+      .then((response) => response.json())
+      .then((next: DomainStatus) => setDomain(next))
       .catch(() => undefined);
   }, []);
 
@@ -45,7 +56,7 @@ export default function AdminOpsPage() {
         {user?.name} · {user?.email}. 배포 {company.releasedAt} · 이 화면은 상단 노란 막대에서 항상 열 수 있습니다.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">주문</p>
           <p className="mt-1 text-2xl font-bold text-navy">{orders.length}</p>
@@ -70,6 +81,14 @@ export default function AdminOpsPage() {
           ) : (
             <p className="mt-1 text-xs text-slate-500">{github?.login ?? "저장소 대기"}</p>
           )}
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-xs text-slate-500">도메인</p>
+          <p className="mt-1 text-lg font-bold text-navy">{domain?.live ? "DNS 확인됨" : "등록 전"}</p>
+          <p className="mt-1 text-xs text-slate-500">{domainPlan.apex}</p>
+          <Link href="/connect/domain" className="mt-2 inline-block text-xs text-[#0046CA]">
+            DNS 정보
+          </Link>
         </article>
       </div>
 

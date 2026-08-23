@@ -1,4 +1,5 @@
 import { company, companyHistory, capabilities } from "@/lib/company";
+import { defaultDnsSettings, plannedRecords } from "@/lib/dns";
 
 export default function CompanyPage() {
   return (
@@ -35,7 +36,50 @@ export default function CompanyPage() {
           <dt className="text-slate-500">주소</dt>
           <dd className="font-medium">{company.address}</dd>
         </div>
+        <div>
+          <dt className="text-slate-500">공식 도메인</dt>
+          <dd className="font-medium">
+            {company.domain} · {company.siteUrl}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">메일</dt>
+          <dd className="font-medium">
+            {company.email} · {company.supportEmail}
+          </dd>
+        </div>
       </dl>
+      <section className="mt-10 rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-xl font-bold text-navy">도메인 · DNS</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{company.dns.note}</p>
+        <p className="mt-1 text-sm text-slate-600">
+          루트 {company.apex} · www {company.wwwHost} → {company.dns.wwwTarget}
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
+                <th className="py-2 pr-3">호스트</th>
+                <th className="py-2 pr-3">유형</th>
+                <th className="py-2 pr-3">값</th>
+                <th className="py-2 pr-3">TTL</th>
+                <th className="py-2">설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plannedRecords(defaultDnsSettings).map((record) => (
+                <tr key={`${record.type}-${record.host}-${record.note}`} className="border-b border-slate-100">
+                  <td className="py-2 pr-3 font-mono">{record.host}</td>
+                  <td className="py-2 pr-3 font-semibold">{record.type}</td>
+                  <td className="py-2 pr-3 font-mono text-xs">{record.value}</td>
+                  <td className="py-2 pr-3 text-slate-500">{record.ttl}</td>
+                  <td className="py-2 text-slate-600">{record.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
       <h2 className="mt-10 text-xl font-bold text-navy">사업 영역</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {capabilities.map((item) => (

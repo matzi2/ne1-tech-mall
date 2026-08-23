@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.1.2** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.1.3** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -19,9 +19,10 @@ npm run dev
 
 ## 사이트 연결
 
-`/connect/github` 가 Chrome 모양의 인앱 작업창입니다. 상단 탭에서 GitHub, 카카오, 카드, 송금 등을 같은 창에서 전환합니다.
+`/connect/github` 가 Chrome 모양의 인앱 작업창입니다. 상단 탭에서 GitHub, 도메인, 카카오, 카드, 송금 등을 같은 창에서 전환합니다.
 
 - GitHub: 장치 코드 확인 후 같은 창에 토큰을 붙여 넣어 `ne1-tech-mall` 저장소 생성·푸시
+- 도메인 · DNS: `/connect/domain` 에서 `ne1-tech.co.kr` A/CNAME/MX/NS 를 저장하고 공개 DNS를 조회
 - 카카오: MATCHDOC과 같은 `/oauth2/authorization/kakao` → `/redirect?accesstoken=` → `localStorage.accessToken`
 
 카카오 REST 키와 카드사 PG 키가 없으면 작업용 화면으로 진행합니다. 키를 넣으면 실제 카카오 로그인으로 넘어갑니다.
@@ -47,5 +48,20 @@ npm run dev
 - 파일·사진·문서로 상품 등록
 - 로그인 / 회원가입 / 찾기 화면, 카카오 로그인 작업 창
 - 사이트 연결 작업실
+- 공식 도메인 NE1-TECH.CO.KR 과 DNS 레코드 (회사소개·운영화면)
 
 데이터는 브라우저 `localStorage`에 저장됩니다.
+
+## 도메인 · DNS
+
+공식 주소는 `https://ne1-tech.co.kr` 입니다. 등록기관에 넣을 레코드는 `/connect/domain` 과 회사소개에 있습니다.
+
+| 호스트 | 유형 | 값 | 설명 |
+| --- | --- | --- | --- |
+| @ | A | 호스팅 IPv4 | `ne1-tech.co.kr` → 쇼핑몰 서버 |
+| www | CNAME | ne1-tech.co.kr | `www.ne1-tech.co.kr` 를 루트로 |
+| @ | MX | 메일 서버 | sales@ / support@ |
+| @ | TXT | `v=spf1 mx ~all` | 메일 발신 확인 |
+| @ | NS | 등록기관 네임서버 | 가비아·후이즈 등에서 확인 |
+
+호스팅 IP가 아직 없으면 A 레코드는 비워 두고, IP가 정해진 뒤 작업창에 저장하면 됩니다.

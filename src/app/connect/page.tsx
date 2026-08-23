@@ -46,7 +46,8 @@ function statusLabel(id: ConnectionId, github: GitHubConnectState | null, local:
     return local.ci?.reviewed ? { text: "CI 확인됨", tone: "ok" as const } : { text: "색·로고 비교", tone: "idle" as const };
   }
   if (id === "domain") {
-    return { text: `${company.domain} 점검`, tone: "idle" as const };
+    if (local.domain?.reviewed) return { text: "DNS 정보 저장됨", tone: "ok" as const };
+    return { text: `${company.domain} · DNS 등록 전`, tone: "idle" as const };
   }
   if (id === "origin") {
     return { text: "Cursor 원격 연결됨", tone: "ok" as const };

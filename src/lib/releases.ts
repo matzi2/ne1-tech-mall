@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.3",
+    date: "2026-08-23",
+    title: "도메인과 DNS 정보",
+    items: [
+      "공식 도메인 NE1-TECH.CO.KR 과 등록용 DNS 레코드",
+      "회사소개·운영화면에 도메인/DNS 상태 표시",
+      "작업창에서 등록기관·네임서버·A/CNAME/MX 저장과 실시간 조회",
+    ],
+  },
+  {
     version: "0.1.2",
     date: "2026-08-23",
     title: "GitHub 연결과 관리자 운영화면",

@@ -16,6 +16,9 @@ export function SiteFooter() {
           <Link href="/connect" className="block hover:text-white">
             사이트 연결
           </Link>
+          <Link href="/connect/domain" className="block hover:text-white">
+            도메인 · DNS
+          </Link>
           <Link href="/products" className="block hover:text-white">
             제품몰
           </Link>
