@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.6",
+    date: "2026-08-23",
+    title: "가비아 인증번호 확인 후 DNS 이어가기",
+    items: [
+      "해외 IP 인증번호 확인 토큰을 올바르게 저장",
+      "인증 성공 뒤 보안 문자 없이 로그인·www CNAME 등록",
+      "인증 결과를 작업창에 바로 표시",
+    ],
+  },
+  {
     version: "0.1.5",
     date: "2026-08-23",
     title: "가비아 로그인 후 DNS 등록",

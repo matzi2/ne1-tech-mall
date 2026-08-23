@@ -6,6 +6,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GabiaPublicState } from "@/lib/gabia-types";
 
+function resultTone(state: GabiaPublicState) {
+  if (state.status === "ready" || state.status === "applied" || state.lastAction === "dns_ok") {
+    return "border-emerald-300 bg-emerald-50 text-emerald-900";
+  }
+  if (state.lastAction === "sms_sent" || state.lastAction === "email_sent" || state.lastAction === "verify_ok") {
+    return "border-sky-300 bg-sky-50 text-sky-950";
+  }
+  if (state.lastAction === "verify_fail" || state.lastAction === "dns_fail" || state.status === "error") {
+    return "border-red-300 bg-red-50 text-red-800";
+  }
+  return "border-amber-200 bg-white text-slate-800";
+}
+
+function actionLabel(state: GabiaPublicState) {
+  switch (state.lastAction) {
+    case "sms_sent":
+      return "휴대전화로 인증번호를 보냈습니다";
+    case "email_sent":
+      return "이메일로 인증번호를 보냈습니다";
+    case "verify_ok":
+      return "인증번호 확인됨";
+    case "verify_fail":
+      return "인증번호 확인 실패";
+    case "dns_ok":
+      return "DNS 등록 완료";
+    case "dns_fail":
+      return "DNS 등록 실패";
+    case "login":
+      return "로그인 진행 중";
+    default:
+      return "대기";
+  }
+}
+
 export function GabiaLoginForm() {
   const [state, setState] = useState<GabiaPublicState | null>(null);
   const [userId, setUserId] = useState("");
@@ -71,6 +105,7 @@ export function GabiaLoginForm() {
       body: JSON.stringify({ userId, password, channel }),
     });
     setState((await response.json()) as GabiaPublicState);
+    setAuthKey("");
     setBusy(false);
   }
 
@@ -84,7 +119,10 @@ export function GabiaLoginForm() {
     });
     const next = (await response.json()) as GabiaPublicState;
     setState(next);
-    if (next.status === "ready" || next.status === "applied") setPassword("");
+    if (next.status === "ready" || next.status === "applied") {
+      setPassword("");
+      setAuthKey("");
+    }
     setBusy(false);
   }
 
@@ -104,11 +142,12 @@ export function GabiaLoginForm() {
       <p className="mt-1 text-sm leading-6 text-slate-700">
         이 작업 서버는 한국 밖입니다. 아이디·보안 문자가 맞아도 가비아가 휴대전화/이메일 추가 인증을 요구할 수 있습니다.
       </p>
-      {state?.message ? (
-        <p className={`mt-2 text-sm font-medium ${ok ? "text-emerald-800" : "text-red-700"}`}>{state.message}</p>
-      ) : null}
-      {state?.applied?.length ? (
-        <p className="mt-1 text-sm text-emerald-800">등록됨: {state.applied.join(", ")}</p>
+      {state ? (
+        <div className={`mt-3 rounded-lg border px-3 py-3 ${resultTone(state)}`}>
+          <p className="text-xs font-semibold tracking-wide uppercase">{actionLabel(state)}</p>
+          <p className="mt-1 text-base font-semibold leading-6">{state.message || "진행 결과를 여기에 표시합니다."}</p>
+          {state.applied?.length ? <p className="mt-1 text-sm">등록됨: {state.applied.join(", ")}</p> : null}
+        </div>
       ) : null}
 
       {ok ? (
@@ -126,6 +165,11 @@ export function GabiaLoginForm() {
           <p className="text-sm text-slate-700">
             가비아 등록 휴대전화 {state.phoneMasked ?? "(확인 중)"} · 메일 {state.emailMasked ?? "(확인 중)"}
           </p>
+          <p className="text-sm leading-6 text-slate-700">
+            {state.hasForeignToken
+              ? "인증번호가 준비됐습니다. 방금 받은 숫자와 비밀번호를 넣고 확인하세요."
+              : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
+          </p>
           <div>
             <Label htmlFor="gabia-id-f">가비아 아이디</Label>
             <Input id="gabia-id-f" className="mt-1" value={userId} onChange={(event) => setUserId(event.target.value)} />
@@ -142,7 +186,7 @@ export function GabiaLoginForm() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="navy" disabled={busy || !password} onClick={() => sendForeign("sms")}>
-              휴대전화로 인증번호
+              휴대전화로 인증번호 다시 받기
             </Button>
             <Button type="button" variant="outline" disabled={busy || !password} onClick={() => sendForeign("ems")}>
               이메일로 인증번호
@@ -150,7 +194,8 @@ export function GabiaLoginForm() {
           </div>
           {state.foreignChannel ? (
             <p className="text-xs text-slate-600">
-              {state.foreignChannel === "sms" ? "휴대전화" : "이메일"}로 보냈습니다.
+              마지막 발송: {state.foreignChannel === "sms" ? "휴대전화" : "이메일"}
+              {state.hasForeignToken ? " · 확인 준비됨" : " · 확인 토큰 없음, 다시 받아 주세요"}
             </p>
           ) : null}
           <div>
@@ -160,11 +205,11 @@ export function GabiaLoginForm() {
               className="mt-1"
               value={authKey}
               onChange={(event) => setAuthKey(event.target.value)}
-              placeholder="받은 숫자"
+              placeholder="새로 받은 숫자"
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" variant="navy" disabled={busy || !authKey || !password}>
+            <Button type="submit" variant="navy" disabled={busy || !authKey || !password || !state.hasForeignToken}>
               인증하고 DNS 등록
             </Button>
             <Button type="button" variant="outline" disabled={busy} onClick={start}>

@@ -26,6 +26,8 @@ function empty(): StoredState {
     foreignChannel: null,
     phoneMasked: null,
     emailMasked: null,
+    lastAction: "idle",
+    hasForeignToken: false,
     cookies: {},
     token: null,
     captchaVcid: null,
@@ -45,6 +47,8 @@ function publicView(state: StoredState): GabiaPublicState {
     foreignChannel: state.foreignChannel,
     phoneMasked: state.phoneMasked,
     emailMasked: state.emailMasked,
+    lastAction: state.lastAction,
+    hasForeignToken: Boolean(state.foreignAuthToken),
   };
 }
 
@@ -95,10 +99,33 @@ async function gabiaFetch(state: StoredState, url: string, init: RequestInit = {
   return response;
 }
 
+function extractAuthToken(data: unknown, depth = 0): string | null {
+  if (depth > 4 || data == null || typeof data !== "object") return null;
+  const record = data as Record<string, unknown>;
+  for (const key of ["auth_token", "authToken"]) {
+    const value = record[key];
+    if (typeof value === "string" && value.length > 8) return value;
+  }
+  if (record.data) return extractAuthToken(record.data, depth + 1);
+  return null;
+}
+
+function omitEmpty(payload: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== "" && value !== null && value !== undefined),
+  );
+}
+
 export async function gabiaStatus() {
   const state = await load();
   if (state.status === "foreign" && state.userId && !state.phoneMasked) {
     await fillForeignContacts(state, state.userId);
+    await save(state);
+  }
+  if (state.status === "foreign" && !state.foreignAuthToken) {
+    state.message =
+      "이전 인증번호는 더 이상 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받은 뒤, 새로 온 숫자만 입력하세요.";
+    state.lastAction = state.lastAction === "verify_fail" ? "verify_fail" : "login";
     await save(state);
   }
   return publicView(state);
@@ -121,6 +148,7 @@ export async function gabiaInit() {
   state.token = data.token ?? null;
   state.captchaVcid = data.captchaInfo?.captchaVcid ?? null;
   state.status = "login";
+  state.lastAction = "login";
   state.message = data.message ?? "가비아 보안 문자를 이 창에 넣으세요.";
   await save(state);
   return publicView(state);
@@ -145,18 +173,29 @@ type GabiaAuthJson = {
   message?: string;
   errorCode?: string;
   errorMessage?: string;
+  auth_token?: string;
+  authToken?: string;
   redirectUrl?: string;
   data?: {
     loginCode?: string;
     gaSessionId?: string;
     needPwdChange?: boolean;
     message?: string;
+    auth_token?: string;
+    authToken?: string;
   };
 };
 
-function authMessage(data: GabiaAuthJson) {
+function authMessage(data: GabiaAuthJson, context: "login" | "foreign" = "login") {
   const code = data.errorCode || "";
   const text = data.errorMessage || data.message || data.data?.message || "";
+  if (context === "foreign") {
+    if (text.includes("인증번호") || code === "GE0020") return text || "인증번호가 맞지 않습니다.";
+    if (text.includes("토큰") || text.includes("인증토큰")) {
+      return "인증번호 세션이 끝났습니다. 비밀번호를 넣고 인증번호를 다시 받으세요.";
+    }
+    return text || "해외 IP 인증에 실패했습니다.";
+  }
   if (code === "GE0011" || code === "GE0012" || text.includes("보안")) {
     return "보안 문자가 맞지 않습니다. 그림을 새로고침한 뒤 다시 입력해 주세요.";
   }
@@ -167,6 +206,10 @@ function authMessage(data: GabiaAuthJson) {
     return text || "아이디 또는 비밀번호를 확인해 주세요.";
   }
   return text || "로그인에 실패했습니다.";
+}
+
+function failedAuth(data: GabiaAuthJson, response: Response) {
+  return !response.ok || data.result === false || Boolean(data.errorCode);
 }
 
 async function refreshCaptcha(state: StoredState) {
@@ -184,6 +227,7 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
     await gabiaInit();
     const next = await load();
     next.status = "login";
+    next.lastAction = "login";
     next.message = "보안 문자를 다시 받은 뒤 바로 입력해 주세요.";
     await save(next);
     return publicView(next);
@@ -215,6 +259,7 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
 
   if (!check.ok || checkData.errorCode) {
     state.status = "login";
+    state.lastAction = "login";
     state.message = authMessage(checkData);
     await refreshCaptcha(state);
     await save(state);
@@ -225,6 +270,8 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
     state.status = "foreign";
     state.userId = payload.userId;
     state.foreignChannel = null;
+    state.foreignAuthToken = null;
+    state.lastAction = "login";
     await fillForeignContacts(state, payload.userId);
     state.message =
       loginCode === "OTP_FOREIGN"
@@ -236,6 +283,7 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
 
   if (loginCode && loginCode !== "ACCESS") {
     state.status = "error";
+    state.lastAction = "login";
     state.message =
       loginCode === "OTP"
         ? "가비아에 OTP가 켜져 있습니다. OTP를 끈 뒤 이 창에서 다시 로그인하거나, 가비아 사이트에서 DNS를 넣어 주세요."
@@ -249,44 +297,74 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
 
 async function finishLogin(
   state: StoredState,
-  payload: { userId: string; password: string; token: string | null; captchaVcid: string | null; captchaValue: string },
+  payload: Record<string, unknown>,
+  options: { afterForeign?: boolean } = {},
 ) {
-  const login = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login", {
-    method: "POST",
-    headers: {
-      Origin: "https://accounts.gabia.com",
-      Referer: "https://accounts.gabia.com/",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      userId: payload.userId,
-      password: payload.password,
-      token: payload.token ?? state.token,
-      captchaVcid: payload.captchaVcid ?? state.captchaVcid,
-      captchaValue: payload.captchaValue,
-      saveIdFlag: false,
-      useOtp: false,
-      otpType: "OTP",
-    }),
-  });
-  const loginData = (await login.json().catch(() => ({}))) as GabiaAuthJson;
+  const attempts: Record<string, unknown>[] = options.afterForeign
+    ? [
+        omitEmpty({
+          userId: payload.userId,
+          password: payload.password,
+          token: state.token,
+          captchaVcid: state.captchaVcid,
+          captchaValue: payload.captchaValue,
+          saveIdFlag: false,
+          useOtp: false,
+          otpType: "OTP",
+        }),
+        { userId: payload.userId, password: payload.password, saveIdFlag: false, useOtp: false, otpType: "OTP" },
+      ]
+    : [
+        {
+          userId: payload.userId,
+          password: payload.password,
+          token: payload.token ?? state.token,
+          captchaVcid: payload.captchaVcid ?? state.captchaVcid,
+          captchaValue: payload.captchaValue,
+          saveIdFlag: false,
+          useOtp: false,
+          otpType: "OTP",
+        },
+      ];
 
-  if (!login.ok || loginData.result === false || loginData.errorCode) {
-    state.status = "login";
-    state.message = authMessage(loginData);
-    await refreshCaptcha(state);
+  let lastData: GabiaAuthJson = {};
+  for (const body of attempts) {
+    const login = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login", {
+      method: "POST",
+      headers: {
+        Origin: "https://accounts.gabia.com",
+        Referer: "https://accounts.gabia.com/",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    lastData = (await login.json().catch(() => ({}))) as GabiaAuthJson;
+    if (!failedAuth(lastData, login)) {
+      const sessionId = lastData.data?.gaSessionId;
+      if (sessionId) state.cookies.gasession = sessionId;
+      state.status = "ready";
+      state.userId = String(payload.userId);
+      state.lastAction = "verify_ok";
+      state.message = "가비아 로그인됨. DNS를 등록합니다.";
+      await save(state);
+      return gabiaApply();
+    }
+  }
+
+  if (options.afterForeign) {
+    state.status = "foreign";
+    state.lastAction = "verify_fail";
+    state.message = `해외 IP 인증은 됐습니다. 로그인 마무리에 실패했습니다. ${authMessage(lastData, "foreign")} 비밀번호와 인증번호를 다시 받아 주세요.`;
     await save(state);
     return publicView(state);
   }
 
-  const sessionId = loginData.data?.gaSessionId;
-  if (sessionId) state.cookies.gasession = sessionId;
-
-  state.status = "ready";
-  state.userId = payload.userId;
-  state.message = "가비아 로그인됨. DNS를 등록합니다.";
+  state.status = "login";
+  state.lastAction = "login";
+  state.message = authMessage(lastData);
+  await refreshCaptcha(state);
   await save(state);
-  return gabiaApply();
+  return publicView(state);
 }
 
 function maskPhone(value?: string | null) {
@@ -321,7 +399,6 @@ export async function gabiaForeignSend(input: { userId: string; password: string
     userPwd: input.password,
     origin: "www",
     method: "Gabia",
-    token: state.token,
   };
   const response = await gabiaFetch(
     state,
@@ -336,24 +413,25 @@ export async function gabiaForeignSend(input: { userId: string; password: string
       body: JSON.stringify(body),
     },
   );
-  const data = (await response.json().catch(() => ({}))) as {
-    result?: boolean;
-    message?: string;
-    errorMessage?: string;
-    data?: { auth_token?: string; message?: string };
-  };
-  if (!response.ok || data.result === false) {
+  const data = (await response.json().catch(() => ({}))) as GabiaAuthJson;
+  if (failedAuth(data, response)) {
     state.status = "foreign";
+    state.lastAction = "verify_fail";
     state.message =
-      data.message || data.errorMessage || "인증번호 발송에 실패했습니다. 비밀번호를 다시 넣고 눌러 주세요.";
+      authMessage(data, "foreign") || "인증번호 발송에 실패했습니다. 비밀번호를 다시 넣고 눌러 주세요.";
     await save(state);
     return publicView(state);
   }
+  const token = extractAuthToken(data);
   state.status = "foreign";
   state.userId = input.userId.trim();
   state.foreignChannel = input.channel;
-  state.foreignAuthToken = data.data?.auth_token ?? null;
-  state.message = data.data?.message || data.message || "인증번호를 보냈습니다. 받은 숫자를 입력하세요.";
+  state.foreignAuthToken = token ?? state.foreignAuthToken;
+  state.lastAction = input.channel === "sms" ? "sms_sent" : "email_sent";
+  const dest = input.channel === "sms" ? state.phoneMasked : state.emailMasked;
+  state.message = token
+    ? `${dest ?? (input.channel === "sms" ? "휴대전화" : "이메일")}로 인증번호를 보냈습니다. 받은 새 숫자를 입력하세요.`
+    : "인증번호는 보냈지만 확인 토큰을 받지 못했습니다. 비밀번호를 확인하고 한 번 더 보내 주세요.";
   await save(state);
   return publicView(state);
 }
@@ -365,6 +443,15 @@ export async function gabiaForeignVerify(input: {
   captchaValue: string;
 }) {
   const state = await load();
+  if (!state.foreignAuthToken) {
+    state.status = "foreign";
+    state.lastAction = "verify_fail";
+    state.message =
+      "인증번호 확인 토큰이 없습니다. 화면에 변화가 없던 이유입니다. 비밀번호를 넣고 인증번호를 다시 받은 뒤, 새로 온 숫자만 입력하세요.";
+    await save(state);
+    return publicView(state);
+  }
+
   const channel = state.foreignChannel ?? "sms";
   const body = {
     userId: input.userId.trim(),
@@ -387,22 +474,26 @@ export async function gabiaForeignVerify(input: {
     },
   );
   const data = (await response.json().catch(() => ({}))) as GabiaAuthJson;
-  if (!response.ok || data.errorCode) {
+  if (failedAuth(data, response)) {
     state.status = "foreign";
-    state.message = authMessage(data) || "인증번호가 맞지 않습니다.";
+    state.lastAction = "verify_fail";
+    state.message = authMessage(data, "foreign") || "인증번호가 맞지 않습니다. 다시 받아 입력해 주세요.";
     await save(state);
     return publicView(state);
   }
 
+  state.lastAction = "verify_ok";
   state.message = "해외 IP 인증이 됐습니다. 로그인과 DNS를 이어서 진행합니다.";
   await save(state);
-  return finishLogin(state, {
-    userId: input.userId.trim(),
-    password: input.password,
-    token: state.token,
-    captchaVcid: state.captchaVcid,
-    captchaValue: input.captchaValue,
-  });
+  return finishLogin(
+    state,
+    {
+      userId: input.userId.trim(),
+      password: input.password,
+      captchaValue: input.captchaValue,
+    },
+    { afterForeign: true },
+  );
 }
 
 function phpArray(records: Record<string, string>[], prefix: string) {
@@ -418,6 +509,7 @@ function phpArray(records: Record<string, string>[], prefix: string) {
 export async function gabiaApply() {
   const state = await load();
   if (state.status !== "ready" && state.status !== "applied") {
+    state.lastAction = "dns_fail";
     state.message = "먼저 가비아에 로그인하세요.";
     await save(state);
     return publicView(state);
@@ -430,6 +522,7 @@ export async function gabiaApply() {
 
   if (list.status === 401) {
     state.status = "login";
+    state.lastAction = "dns_fail";
     state.message = "가비아 세션이 끝났습니다. 다시 로그인하세요.";
     await save(state);
     return publicView(state);
@@ -446,6 +539,7 @@ export async function gabiaApply() {
 
   if (hasWww) {
     state.status = "applied";
+    state.lastAction = "dns_ok";
     state.applied = Array.from(new Set([...state.applied, "www CNAME"]));
     state.message = "www CNAME 은 이미 가비아에 있습니다.";
     await save(state);
@@ -483,12 +577,14 @@ export async function gabiaApply() {
 
   if (!saveRes.ok) {
     state.status = "error";
+    state.lastAction = "dns_fail";
     state.message = saved.message || `가비아 DNS 저장에 실패했습니다 (${saveRes.status}).`;
     await save(state);
     return publicView(state);
   }
 
   state.status = "applied";
+  state.lastAction = "dns_ok";
   state.applied = Array.from(new Set([...state.applied, "www CNAME"]));
   state.message = "가비아에 www CNAME(ne1-tech.co.kr.) 을 등록했습니다. 반영까지 시간이 걸릴 수 있습니다.";
   await save(state);
