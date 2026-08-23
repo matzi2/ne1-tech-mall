@@ -28,7 +28,11 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  if (pathname.startsWith("/admin/gabia") || pathname.startsWith("/admin/github")) {
+  if (
+    pathname.startsWith("/admin/gabia") ||
+    pathname.startsWith("/admin/github") ||
+    pathname.startsWith("/admin/nas")
+  ) {
     return (
       <>
         <AdminBar />

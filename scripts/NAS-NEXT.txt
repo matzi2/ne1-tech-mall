@@ -1,0 +1,17 @@
+엔이원텍 쇼핑몰 · NAS에서 남은 작업
+
+가비아 A(@) 175.123.135.188 은 등록됐습니다.
+
+1) 공유기: 외부 TCP 80→NAS:80, 443→NAS:443
+   DSM 5000·5001, SSH 22, 파일공유는 인터넷에 열지 않습니다.
+
+2) 이 폴더(/volume1/docker/ne1-tech-mall)에서 컨테이너를 켭니다.
+   컨테이너 관리자 → 프로젝트 → 생성 → docker-compose.yml
+   또는 이 폴더의 scripts/nas-bootstrap.sh
+
+3) 제어판 → 로그인 포털 → 고급 → 역방향 프록시
+   소스 HTTPS 443 / 호스트 ne1-tech.co.kr → 대상 HTTP 127.0.0.1:43177
+   www.ne1-tech.co.kr 도 같은 대상으로 하나 더
+
+4) 제어판 → 보안 → 인증서 → Let's Encrypt
+   ne1-tech.co.kr, SAN www.ne1-tech.co.kr

@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/github", label: "GitHub", match: "exact" as const },
   { href: "/admin/github/token", label: "토큰", match: "exact" as const },
   { href: "/admin/gabia", label: "가비아", match: "prefix" as const },
+  { href: "/admin/nas", label: "NAS", match: "prefix" as const },
   { href: "/admin/products/new", label: "상품등록", match: "prefix" as const },
   { href: "/products", label: "쇼핑몰", match: "prefix" as const },
   { href: "/history", label: "히스토리", match: "prefix" as const },

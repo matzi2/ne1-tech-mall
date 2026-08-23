@@ -133,7 +133,7 @@ export const nasSteps = [
   {
     id: "gabia",
     title: "가비아 A 레코드",
-    body: `가비아 DNS에서 호스트 @, 타입 A, 값에 회사 공인 IPv4를 넣습니다. 메일은 Daum MX 그대로 둡니다.`,
+    body: `가비아에 호스트 @ · A · 175.123.135.188 이 등록됐습니다. 메일은 Daum MX 그대로 둡니다.`,
   },
 ] as const;
 

@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.2.16** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.2.17** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -56,7 +56,7 @@ Preview는 쇼핑몰 홈입니다. 시놀로지·가비아 같은 개발 작업�
 
 | 호스트 | 유형 | 값 | 설명 |
 | --- | --- | --- | --- |
-| @ | A | 호스팅 IPv4 (미등록) | `ne1-tech.co.kr` → 쇼핑몰 서버 |
+| @ | A | `175.123.135.188` (가비아 등록) | `ne1-tech.co.kr` → 공유기 WAN |
 | www | CNAME | `ne1-tech.co.kr.` (가비아에 추가) | `www.ne1-tech.co.kr` 를 루트로. 값 끝 마침표 필수 |
 | @ | MX | `10 aspmx.daum.net`, `20 alt.aspmx.daum.net` | sales@ / support@ |
 | @ | TXT | `v=spf1 include:_spf.daum.net ~all` | 메일 발신 확인 |

@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.17",
+    date: "2026-08-23",
+    title: "가비아 A 반영 후 NAS 소스 준비",
+    items: [
+      "ne1-tech.co.kr A 레코드 175.123.135.188 반영을 확인",
+      "시놀로지 /docker/ne1-tech-mall 에 올릴 소스와 컨테이너 실행 스크립트를 준비",
+    ],
+  },
+  {
     version: "0.2.16",
     date: "2026-08-23",
     title: "가비아 사이트에서 직접 로그인",
