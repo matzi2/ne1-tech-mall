@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.0",
+    date: "2026-08-23",
+    title: "개발 작업창 정리",
+    items: [
+      "쇼핑몰 화면만 공개. 연결 작업실은 관리자만",
+      "무료 전용 공인 IPv4는 클라우드 계정 필요",
+    ],
+  },
+  {
     version: "0.1.9",
     date: "2026-08-23",
     title: "홈쇼핑 순서로 홈·제품몰 이어가기",

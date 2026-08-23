@@ -74,9 +74,9 @@ export default function ConnectHubPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <p className="text-sm font-semibold tracking-wide text-[#0046CA]">SITE CONNECTIONS</p>
-      <h1 className="mt-2 text-3xl font-bold text-[#000092]">사이트 연결 작업실</h1>
+      <h1 className="mt-2 text-3xl font-bold text-[#000092]">운영 연결 (보관)</h1>
       <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-        GitHub 저장소는 연결됐습니다. 지금은 이메일로 쇼핑몰에 로그인합니다.
+        개발용 Chrome 작업창은 정리했습니다. 이 목록은 관리자만 봅니다.
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         <Button asChild>

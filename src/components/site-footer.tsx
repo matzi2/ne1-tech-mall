@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { company } from "@/lib/company";
-import { gabiaLinks } from "@/lib/gabia";
 
 export function SiteFooter() {
   return (
@@ -14,36 +13,24 @@ export function SiteFooter() {
         </div>
         <div className="text-sm leading-7">
           <p className="font-semibold text-white">쇼핑몰</p>
-          <Link href="/connect" className="block hover:text-white">
-            사이트 연결
-          </Link>
-          <Link href="/connect/domain" className="block hover:text-white">
-            도메인 · DNS
-          </Link>
-          {gabiaLinks.map((item) => (
-            <a key={item.id} href={item.href} className="block hover:text-white">
-              {item.label}
-            </a>
-          ))}
           <Link href="/products" className="block hover:text-white">
             제품몰
           </Link>
-          <Link href="/login" className="block hover:text-white">
-            로그인
-          </Link>
-          <Link href="/admin" className="block hover:text-white">
-            운영화면
-          </Link>
-          <Link href="/history" className="block hover:text-white">
-            버전 히스토리
+          <Link href="/company" className="block hover:text-white">
+            회사소개
           </Link>
           <Link href="/inquiry" className="block hover:text-white">
             견적·문의
           </Link>
+          <Link href="/login" className="block hover:text-white">
+            로그인
+          </Link>
         </div>
         <div className="text-sm leading-7">
           <p className="font-semibold text-white">고객지원</p>
-          <p>TEL {company.phone} · {company.phone2}</p>
+          <p>
+            TEL {company.phone} · {company.phone2}
+          </p>
           <p>FAX {company.fax}</p>
           <p>{company.email}</p>
           <p>{company.hours}</p>
@@ -58,8 +45,8 @@ export function SiteFooter() {
             TEL {company.phone} · {company.phone2} · FAX {company.fax}
           </p>
           <p>
-            입금계좌 {company.bank.name} {company.bank.account} (예금주 {company.bank.holder}) ·
-            도메인 {company.domain} · v{company.version}
+            입금계좌 {company.bank.name} {company.bank.account} (예금주 {company.bank.holder}) · 도메인{" "}
+            {company.domain} · v{company.version}
           </p>
         </div>
       </div>

@@ -84,10 +84,10 @@ export default function AdminOpsPage() {
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">도메인</p>
-          <p className="mt-1 text-lg font-bold text-navy">{domain?.live ? "DNS 확인됨" : "가비아 설정 중"}</p>
+          <p className="mt-1 text-lg font-bold text-navy">{domain?.live ? "A 확인됨" : "www·_dmarc 반영"}</p>
           <p className="mt-1 text-xs text-slate-500">{domainPlan.apex}</p>
           <Link href="/connect/domain" className="mt-2 inline-block text-xs text-[#0046CA]">
-            가비아 DNS
+            DNS 조회
           </Link>
           <p className="mt-1 break-all font-mono text-[11px] text-slate-500">
             https://accounts.gabia.com/
