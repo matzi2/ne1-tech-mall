@@ -11,12 +11,13 @@
 - 공식 주소 `https://ne1-tech.co.kr` / `www.ne1-tech.co.kr` DNS 레코드표
 - `/connect/domain` 에서 등록기관, 네임서버, A, CNAME, MX 저장
 - 공개 DNS 조회(A/NS/MX/TXT/CNAME)로 현재 레코드 확인
+- 가비아 네임서버(`ns.gabia.co.kr` 등)와 Daum 메일(MX `aspmx.daum.net`) 반영
 - 운영화면·관리자 막대에서 도메인 상태 바로 열기
 - 회사소개에 도메인·메일·DNS 안내
 
 ### 참고
 
-- 호스팅 IPv4가 아직 없어 A 레코드는 등록 전입니다. IP가 정해지면 작업창에 넣고 등록기관에 반영합니다.
+- 호스팅 IPv4와 www CNAME은 아직 없습니다. IP가 정해지면 작업창에 넣고 가비아에 A·CNAME을 등록합니다.
 
 ## 0.1.2 — 2026-08-23
 

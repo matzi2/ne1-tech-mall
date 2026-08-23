@@ -19,9 +19,12 @@ export const company = {
   wwwHost: "www.ne1-tech.co.kr",
   dns: {
     ttl: "3600",
+    registrar: "가비아",
+    nameservers: "ns.gabia.co.kr, ns1.gabia.co.kr, ns.gabia.net",
     wwwTarget: "ne1-tech.co.kr",
-    spf: "v=spf1 mx ~all",
-    note: "호스팅 IPv4가 정해지면 A 레코드에 넣고, www는 루트로 붙입니다. 메일은 sales@ / support@ 입니다.",
+    mx: "10 aspmx.daum.net, 20 alt.aspmx.daum.net",
+    spf: "v=spf1 include:_spf.daum.net ~all",
+    note: "도메인은 가비아에 등록되어 있습니다. 메일은 Daum(aspmx.daum.net)으로 받습니다. 호스팅 IPv4가 정해지면 A 레코드와 www CNAME을 넣으면 쇼핑몰이 열립니다.",
   },
   tagline: "산업용 전자부품, 품목별로 바로 찾습니다.",
   description:

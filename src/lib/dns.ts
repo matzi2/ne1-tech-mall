@@ -20,11 +20,11 @@ export type DnsSettings = {
 };
 
 export const defaultDnsSettings: DnsSettings = {
-  registrar: "",
-  nameservers: "",
+  registrar: company.dns.registrar,
+  nameservers: company.dns.nameservers,
   ipv4: "",
   wwwTarget: company.dns.wwwTarget,
-  mx: "",
+  mx: company.dns.mx,
 };
 
 export const domainPlan = {
@@ -38,8 +38,8 @@ export const domainPlan = {
 export function plannedRecords(settings: DnsSettings): DnsRecord[] {
   const ipv4 = settings.ipv4.trim() || "(호스팅 IPv4를 넣으면 여기에 표시)";
   const www = settings.wwwTarget.trim() || company.dns.wwwTarget;
-  const mx = settings.mx.trim() || "(메일 서버를 쓰면 여기에 MX)";
-  const ns = settings.nameservers.trim() || "(등록기관 네임서버)";
+  const mx = settings.mx.trim() || company.dns.mx;
+  const ns = settings.nameservers.trim() || company.dns.nameservers;
 
   return [
     {

@@ -56,12 +56,14 @@ npm run dev
 
 공식 주소는 `https://ne1-tech.co.kr` 입니다. 등록기관에 넣을 레코드는 `/connect/domain` 과 회사소개에 있습니다.
 
+등록기관은 **가비아** 입니다. 메일은 Daum(`aspmx.daum.net`)으로 수신합니다.
+
 | 호스트 | 유형 | 값 | 설명 |
 | --- | --- | --- | --- |
-| @ | A | 호스팅 IPv4 | `ne1-tech.co.kr` → 쇼핑몰 서버 |
-| www | CNAME | ne1-tech.co.kr | `www.ne1-tech.co.kr` 를 루트로 |
-| @ | MX | 메일 서버 | sales@ / support@ |
-| @ | TXT | `v=spf1 mx ~all` | 메일 발신 확인 |
-| @ | NS | 등록기관 네임서버 | 가비아·후이즈 등에서 확인 |
+| @ | A | 호스팅 IPv4 (미등록) | `ne1-tech.co.kr` → 쇼핑몰 서버 |
+| www | CNAME | ne1-tech.co.kr (미등록) | `www.ne1-tech.co.kr` 를 루트로 |
+| @ | MX | `10 aspmx.daum.net`, `20 alt.aspmx.daum.net` | sales@ / support@ |
+| @ | TXT | `v=spf1 include:_spf.daum.net ~all` | 메일 발신 확인 |
+| @ | NS | `ns.gabia.co.kr`, `ns1.gabia.co.kr`, `ns.gabia.net` | 가비아 네임서버 |
 
-호스팅 IP가 아직 없으면 A 레코드는 비워 두고, IP가 정해진 뒤 작업창에 저장하면 됩니다.
+호스팅 IP가 정해지면 가비아에 A 레코드와 www CNAME을 등록하면 됩니다.

@@ -89,7 +89,7 @@ export default function DomainConnectPage() {
               <Input
                 id="registrar"
                 className="mt-1"
-                placeholder="가비아, 후이즈, 카페24 등"
+                placeholder="가비아"
                 value={settings.registrar}
                 onChange={(event) => setSettings({ ...settings, registrar: event.target.value })}
               />
@@ -99,7 +99,7 @@ export default function DomainConnectPage() {
               <Input
                 id="ns"
                 className="mt-1 font-mono text-sm"
-                placeholder="ns1.example.com, ns2.example.com"
+                placeholder="ns.gabia.co.kr, ns1.gabia.co.kr, ns.gabia.net"
                 value={settings.nameservers}
                 onChange={(event) => setSettings({ ...settings, nameservers: event.target.value })}
               />
@@ -128,7 +128,7 @@ export default function DomainConnectPage() {
               <Input
                 id="mx"
                 className="mt-1 font-mono text-sm"
-                placeholder="10 mx.example.com"
+                placeholder="10 aspmx.daum.net"
                 value={settings.mx}
                 onChange={(event) => setSettings({ ...settings, mx: event.target.value })}
               />

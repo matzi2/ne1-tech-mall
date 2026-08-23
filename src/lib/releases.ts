@@ -12,6 +12,7 @@ export const releases: Release[] = [
     title: "도메인과 DNS 정보",
     items: [
       "공식 도메인 NE1-TECH.CO.KR 과 등록용 DNS 레코드",
+      "가비아 네임서버와 Daum 메일(MX/SPF) 반영",
       "회사소개·운영화면에 도메인/DNS 상태 표시",
       "작업창에서 등록기관·네임서버·A/CNAME/MX 저장과 실시간 조회",
     ],
