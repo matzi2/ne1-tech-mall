@@ -126,12 +126,65 @@ export async function gabiaCaptchaImage() {
   };
 }
 
+type GabiaAuthJson = {
+  result?: boolean;
+  loginCode?: string;
+  message?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  redirectUrl?: string;
+  data?: {
+    loginCode?: string;
+    gaSessionId?: string;
+    needPwdChange?: boolean;
+    message?: string;
+  };
+};
+
+function authMessage(data: GabiaAuthJson) {
+  const code = data.errorCode || "";
+  const text = data.errorMessage || data.message || data.data?.message || "";
+  if (code === "GE0011" || code === "GE0012" || text.includes("보안")) {
+    return "보안 문자가 맞지 않습니다. 그림을 새로고침한 뒤 다시 입력해 주세요.";
+  }
+  if (text.includes("인증토큰") || text.includes("토큰")) {
+    return "로그인 토큰이 만료됐습니다. 보안 문자를 새로고침한 뒤 바로 입력해 주세요.";
+  }
+  if (text.includes("비밀번호") || text.includes("아이디") || code.startsWith("GE")) {
+    return text || "아이디 또는 비밀번호를 확인해 주세요.";
+  }
+  return text || "로그인에 실패했습니다.";
+}
+
+async function refreshCaptcha(state: StoredState) {
+  const retry = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login/retry-captcha", {
+    headers: { Origin: "https://accounts.gabia.com", Referer: "https://accounts.gabia.com/" },
+  });
+  const retryData = (await retry.json().catch(() => ({}))) as { captchaInfo?: { captchaVcid?: string }; token?: string };
+  state.captchaVcid = retryData.captchaInfo?.captchaVcid ?? state.captchaVcid;
+  if (retryData.token) state.token = retryData.token;
+}
+
 export async function gabiaLogin(input: { userId: string; password: string; captchaValue: string }) {
   const state = await load();
-  const body = {
+  if (!state.token || !state.captchaVcid) {
+    await gabiaInit();
+    const next = await load();
+    next.status = "login";
+    next.message = "보안 문자를 다시 받은 뒤 바로 입력해 주세요.";
+    await save(next);
+    return publicView(next);
+  }
+
+  const payload = {
     userId: input.userId.trim(),
     password: input.password,
+    token: state.token,
+    captchaVcid: state.captchaVcid,
     captchaValue: input.captchaValue.trim(),
+    saveIdFlag: false,
+    useOtp: false,
+    otpType: "OTP",
   };
   const headers = {
     Origin: "https://accounts.gabia.com",
@@ -142,21 +195,25 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
   const check = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login/check-access", {
     method: "POST",
     headers,
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
-  const checkData = (await check.json().catch(() => ({}))) as {
-    loginCode?: string;
-    message?: string;
-    errorCode?: string;
-    errorMessage?: string;
-  };
+  const checkData = (await check.json().catch(() => ({}))) as GabiaAuthJson;
+  const loginCode = checkData.loginCode || checkData.data?.loginCode;
 
-  if (checkData.loginCode && checkData.loginCode !== "ACCESS") {
+  if (!check.ok || checkData.errorCode) {
+    state.status = "login";
+    state.message = authMessage(checkData);
+    await refreshCaptcha(state);
+    await save(state);
+    return publicView(state);
+  }
+
+  if (loginCode && loginCode !== "ACCESS") {
     state.status = "error";
     state.message =
-      checkData.loginCode === "OTP"
-        ? "가비아에 OTP가 켜져 있습니다. OTP를 끈 뒤 다시 로그인하거나, 가비아 사이트에서 직접 로그인한 뒤 알려 주세요."
-        : `가비아 추가 확인이 필요합니다 (${checkData.loginCode}).`;
+      loginCode === "OTP"
+        ? "가비아에 OTP가 켜져 있습니다. OTP를 끈 뒤 이 창에서 다시 로그인하거나, 가비아 사이트에서 DNS를 넣어 주세요."
+        : `가비아 추가 확인이 필요합니다 (${loginCode}).`;
     await save(state);
     return publicView(state);
   }
@@ -164,30 +221,23 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
   const login = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login", {
     method: "POST",
     headers,
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
-  const loginData = (await login.json().catch(() => ({}))) as {
-    result?: boolean;
-    message?: string;
-    errorCode?: string;
-    errorMessage?: string;
-    redirectUrl?: string;
-  };
+  const loginData = (await login.json().catch(() => ({}))) as GabiaAuthJson;
 
   if (!login.ok || loginData.result === false || loginData.errorCode) {
     state.status = "login";
-    state.message = loginData.errorMessage || loginData.message || "로그인에 실패했습니다. 보안 문자를 다시 받아 주세요.";
-    const retry = await gabiaFetch(state, "https://member-public-api.gabia.com/v1/auth/login/retry-captcha", {
-      headers: { Origin: "https://accounts.gabia.com", Referer: "https://accounts.gabia.com/" },
-    });
-    const retryData = (await retry.json().catch(() => ({}))) as { captchaInfo?: { captchaVcid?: string } };
-    state.captchaVcid = retryData.captchaInfo?.captchaVcid ?? state.captchaVcid;
+    state.message = authMessage(loginData);
+    await refreshCaptcha(state);
     await save(state);
     return publicView(state);
   }
 
+  const sessionId = loginData.data?.gaSessionId;
+  if (sessionId) state.cookies.gasession = sessionId;
+
   state.status = "ready";
-  state.userId = body.userId;
+  state.userId = payload.userId;
   state.message = "가비아 로그인됨. DNS를 등록합니다.";
   await save(state);
   return gabiaApply();

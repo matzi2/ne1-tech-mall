@@ -56,7 +56,7 @@ export function GabiaLoginForm() {
         가비아에 등록합니다.
       </p>
       {state?.message ? (
-        <p className={`mt-2 text-sm ${ok ? "text-emerald-800" : "text-slate-800"}`}>{state.message}</p>
+        <p className={`mt-2 text-sm font-medium ${ok ? "text-emerald-800" : "text-red-700"}`}>{state.message}</p>
       ) : null}
       {state?.applied?.length ? (
         <p className="mt-1 text-sm text-emerald-800">등록됨: {state.applied.join(", ")}</p>
