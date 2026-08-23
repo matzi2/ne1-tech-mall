@@ -39,6 +39,18 @@ export default function CheckoutPage() {
     [cartLines],
   );
 
+  if (user?.status === "withdrawn") {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-navy">탈퇴 대기 중에는 주문할 수 없습니다.</h1>
+        <p className="mt-2 text-sm text-slate-500">탈퇴를 취소한 뒤 다시 주문해 주세요.</p>
+        <Button asChild className="mt-6">
+          <Link href="/account">탈퇴 취소</Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (cartLines.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">

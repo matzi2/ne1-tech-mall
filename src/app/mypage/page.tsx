@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { isAdmin } from "@/lib/company";
 import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
+import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { formatPoints } from "@/lib/points";
 
 export default function MyPage() {
@@ -44,11 +45,25 @@ export default function MyPage() {
               <Link href="/admin">운영화면</Link>
             </Button>
           ) : null}
+          <Button asChild variant="outline">
+            <Link href="/account">가입·탈퇴</Link>
+          </Button>
           <Button variant="outline" onClick={logout}>
             로그아웃
           </Button>
         </div>
       </div>
+      {user.status === "withdrawn" ? (
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <p className="font-semibold text-navy">탈퇴 대기 중입니다.</p>
+          <p className="mt-1 text-sm text-amber-950">
+            {formatMemberDate(user.purgeAt)}에 삭제됩니다. {daysUntil(user.purgeAt)}일 남았습니다.
+          </p>
+          <Button asChild size="sm" className="mt-3">
+            <Link href="/account">탈퇴 취소</Link>
+          </Button>
+        </div>
+      ) : null}
       <div className="mt-6 rounded-xl bg-navy p-5 text-white">
         <p className="text-sm text-white/70">보유 포인트</p>
         <p className="text-3xl font-bold">{formatPoints(pointBalance)}</p>

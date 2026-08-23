@@ -11,6 +11,7 @@ import {
 import { company, demoAccounts, type Role } from "@/lib/company";
 import type { Inquiry, InquiryItem, InquiryStatus } from "@/lib/inquiries";
 import { INQUIRY_STORAGE } from "@/lib/inquiries";
+import { isPurgeDue, type MemberRecord, type MemberStatus } from "@/lib/membership";
 import { products as seedProducts } from "@/lib/products";
 import type { CatalogProduct } from "@/lib/catalog";
 import type { PaymentMethod } from "@/lib/payment";
@@ -24,9 +25,13 @@ export type SessionUser = {
   email: string;
   name: string;
   role: Role;
+  status?: MemberStatus;
+  createdAt?: string;
+  withdrawnAt?: string;
+  purgeAt?: string;
 };
 
-type StoredUser = SessionUser;
+export type StoredUser = SessionUser;
 
 export type CartItem = { slug: string; qty: number };
 
@@ -112,7 +117,22 @@ function seedUsers(): StoredUser[] {
     email: account.email,
     name: account.name,
     role: account.role,
+    status: "active" as const,
+    createdAt: company.founded,
   }));
+}
+
+function applyMember(user: SessionUser, member?: MemberRecord | null): SessionUser {
+  if (!member) return { ...user, status: user.status ?? "active" };
+  return {
+    ...user,
+    name: member.name || user.name,
+    role: member.role || user.role,
+    status: member.status,
+    createdAt: member.createdAt,
+    withdrawnAt: member.withdrawnAt,
+    purgeAt: member.purgeAt,
+  };
 }
 
 function toSeedCatalog(): CatalogProduct[] {
@@ -139,10 +159,13 @@ type AppState = {
   cartLines: { product: CatalogProduct; qty: number }[];
   productTotal: number;
   pointBalance: number;
-  applySession: (user: SessionUser) => void;
+  applySession: (user: SessionUser, member?: MemberRecord | null) => void;
   loginWithKakao: (input: { nickname: string; account: string }) => void;
   signup: (input: { name: string; email: string; role: Role }) => string | null;
   logout: () => void;
+  withdrawAccount: (reason?: string) => Promise<string | null>;
+  cancelWithdrawal: () => Promise<string | null>;
+  purgeExpiredAccounts: () => { emails: string[] };
   addToCart: (slug: string, qty?: number) => void;
   updateQty: (slug: string, qty: number) => void;
   removeFromCart: (slug: string) => void;
@@ -169,24 +192,40 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const storedUsers = readJson<StoredUser[]>(USERS_KEY, []);
-    const merged = [...seedUsers()];
+    const byEmail = new Map<string, StoredUser>();
+    seedUsers().forEach((item) => byEmail.set(item.email, item));
     storedUsers.forEach((item) => {
-      if (!merged.some((user) => user.email === item.email)) merged.push(item);
+      byEmail.set(item.email, { ...byEmail.get(item.email), ...item });
     });
+    const merged = [...byEmail.values()].filter((item) => !isPurgeDue(item));
+    const purgedEmails = [...byEmail.values()].filter(isPurgeDue).map((item) => item.email);
+    const storedOrders = readJson<Order[]>(ORDERS_KEY, []);
+    const storedPoints = readJson<PointEntry[]>(POINTS_KEY, []);
+    const storedInquiries = readJson<Inquiry[]>(INQUIRIES_KEY, []);
     setUsers(merged);
-    const localUser = readJson<SessionUser | null>(AUTH_KEY, null);
-    setUser(localUser);
-    void fetch("/api/auth/session")
-      .then((response) => response.json())
-      .then((data: { user?: SessionUser | null }) => {
-        if (data.user) setUser(data.user);
-      })
-      .catch(() => undefined);
     setCart(readJson<CartItem[]>(CART_KEY, []));
     setExtras(readJson<CatalogProduct[]>(CATALOG_KEY, []));
-    setOrders(readJson<Order[]>(ORDERS_KEY, []));
-    setPoints(readJson<PointEntry[]>(POINTS_KEY, []));
-    setInquiries(readJson<Inquiry[]>(INQUIRIES_KEY, []));
+    setOrders(
+      purgedEmails.length
+        ? storedOrders.map((order) =>
+            order.email && purgedEmails.includes(order.email)
+              ? { ...order, email: null, buyerName: "탈퇴회원", buyerPhone: "" }
+              : order,
+          )
+        : storedOrders,
+    );
+    setPoints(purgedEmails.length ? storedPoints.filter((entry) => !purgedEmails.includes(entry.email)) : storedPoints);
+    setInquiries(
+      purgedEmails.length ? storedInquiries.filter((item) => !purgedEmails.includes(item.email)) : storedInquiries,
+    );
+    const localUser = readJson<SessionUser | null>(AUTH_KEY, null);
+    setUser(localUser && !isPurgeDue(localUser) ? localUser : null);
+    void fetch("/api/auth/session")
+      .then((response) => response.json())
+      .then((data: { user?: SessionUser | null; membership?: MemberRecord | null }) => {
+        if (data.user) setUser(applyMember(data.user, data.membership));
+      })
+      .catch(() => undefined);
     setReady(true);
   }, []);
 
@@ -228,9 +267,20 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     return mine.at(-1)?.balance ?? 0;
   }, [points, user]);
 
-  const applySession = useCallback((next: SessionUser) => {
-    setUsers((prev) => (prev.some((item) => item.email === next.email) ? prev : [...prev, next]));
-    setUser(next);
+  const applySession = useCallback((next: SessionUser, member?: MemberRecord | null) => {
+    const merged = applyMember(next, member);
+    setUsers((prev) => {
+      const existing = prev.find((item) => item.email === merged.email);
+      const record = {
+        ...existing,
+        ...merged,
+        status: merged.status ?? existing?.status ?? "active",
+        createdAt: existing?.createdAt ?? merged.createdAt ?? new Date().toISOString(),
+      };
+      if (existing) return prev.map((item) => (item.email === record.email ? record : item));
+      return [...prev, record];
+    });
+    setUser(merged);
   }, []);
 
   const signup = useCallback((input: { name: string; email: string; role: Role }) => {
@@ -254,6 +304,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
             email,
             name: input.nickname.trim() || "카카오회원",
             role: "member",
+            status: "active",
+            createdAt: new Date().toISOString(),
           },
         ];
       });
@@ -281,6 +333,55 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     setUser(null);
     void fetch("/api/auth/logout", { method: "POST" });
   }, []);
+
+  const withdrawAccount = useCallback(async (reason?: string) => {
+    const response = await fetch("/api/auth/membership", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "withdraw", reason }),
+    });
+    const data = (await response.json()) as { ok?: boolean; message?: string; member?: MemberRecord };
+    if (!data.ok || !data.member) return data.message ?? "탈퇴를 처리하지 못했습니다.";
+    setUsers((prev) => prev.map((item) => (item.email === data.member!.email ? applyMember(item, data.member) : item)));
+    setUser(null);
+    void fetch("/api/auth/logout", { method: "POST" });
+    return null;
+  }, []);
+
+  const cancelWithdrawal = useCallback(async () => {
+    const response = await fetch("/api/auth/membership", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel" }),
+    });
+    const data = (await response.json()) as { ok?: boolean; message?: string; member?: MemberRecord };
+    if (!data.ok || !data.member) return data.message ?? "탈퇴를 취소하지 못했습니다.";
+    const restored = applyMember(
+      { email: data.member.email, name: data.member.name, role: data.member.role },
+      data.member,
+    );
+    setUsers((prev) => prev.map((item) => (item.email === restored.email ? restored : item)));
+    setUser(restored);
+    return null;
+  }, []);
+
+  const purgeExpiredAccounts = useCallback(() => {
+    const due = users.filter(isPurgeDue);
+    const emails = due.map((item) => item.email);
+    if (!emails.length) return { emails };
+    setUsers((prev) => prev.filter((item) => !emails.includes(item.email)));
+    setPoints((prev) => prev.filter((entry) => !emails.includes(entry.email)));
+    setInquiries((prev) => prev.filter((item) => !emails.includes(item.email)));
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.email && emails.includes(order.email)
+          ? { ...order, email: null, buyerName: "탈퇴회원", buyerPhone: "" }
+          : order,
+      ),
+    );
+    if (user && emails.includes(user.email)) setUser(null);
+    return { emails };
+  }, [user, users]);
 
   const addToCart = useCallback((slug: string, qty = 1) => {
     setCart((prev) => {
@@ -474,6 +575,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     loginWithKakao,
     signup,
     logout,
+    withdrawAccount,
+    cancelWithdrawal,
+    purgeExpiredAccounts,
     addToCart,
     updateQty,
     removeFromCart,

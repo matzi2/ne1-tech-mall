@@ -14,6 +14,7 @@ import { useCompare } from "@/components/compare-provider";
 import { getCategoryGroup, getCategoryLabel } from "@/lib/products";
 import { useBom } from "@/components/bom-provider";
 import { alternativeProducts } from "@/lib/bom";
+import { SiteOfferTable } from "@/components/site-offer-table";
 import { relatedProducts } from "@/lib/shop";
 
 export default function ProductDetailPage() {
@@ -112,6 +113,13 @@ export default function ProductDetailPage() {
             </Link>
           </p>
         ) : null}
+        <div className="mt-8">
+          <h2 className="font-semibold text-navy">사이트별 가격·재고</h2>
+          <p className="mt-1 text-sm text-slate-500">같은 품번을 다른 사이트와 맞춰 봅니다.</p>
+          <div className="mt-3">
+            <SiteOfferTable product={product} compact />
+          </div>
+        </div>
         {product.specs.length > 0 ? (
           <dl className="mt-8 divide-y rounded-xl border border-slate-200 bg-white">
             {product.specs.map((spec) => (

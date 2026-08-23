@@ -72,9 +72,13 @@ export function SiteHeader() {
             >
               <UserRound className="size-3.5" />
               {user.name}
-              <span className="rounded bg-amber-400 px-1.5 py-0.5 font-semibold text-navy">
-                {formatPoints(pointBalance)}
-              </span>
+              {user.status === "withdrawn" ? (
+                <span className="rounded bg-amber-400 px-1.5 py-0.5 font-semibold text-navy">탈퇴 대기</span>
+              ) : (
+                <span className="rounded bg-amber-400 px-1.5 py-0.5 font-semibold text-navy">
+                  {formatPoints(pointBalance)}
+                </span>
+              )}
             </Link>
           ) : (
             <Button asChild variant="amber" size="sm" className={cn(isAuth && "ring-2 ring-amber-200")}>

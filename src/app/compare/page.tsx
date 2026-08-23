@@ -23,6 +23,7 @@ import {
   type SpecSearchFilters,
   type StockFilter,
 } from "@/lib/spec-search";
+import { SiteOfferTable } from "@/components/site-offer-table";
 import { cn } from "@/lib/utils";
 
 function CompareBody() {
@@ -73,7 +74,7 @@ function CompareBody() {
           <p className="text-xs font-semibold tracking-wide text-amber-300">SPEC SEARCH</p>
           <h1 className="mt-1 text-3xl font-bold">스펙서치 · 부품 비교</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/75">
-            품번·정격으로 찾고 사양을 표로 맞춰 봅니다. 비교는{" "}
+            품번·정격으로 찾고 사양을 맞춘 뒤, 부품마다 사이트별 가격·재고를 봅니다. 비교는{" "}
             {COMPARE_MAX}개까지입니다.
           </p>
           <form
@@ -376,6 +377,24 @@ function CompareBody() {
                   </tbody>
                 </table>
                 <p className="mt-3 text-xs text-slate-500">노란 칸은 서로 다른 값입니다.</p>
+              </div>
+            )}
+          </section>
+
+          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-lg font-bold text-navy">사이트별 가격·재고</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              선택한 부품마다 이 몰과 다른 사이트의 가격·재고·납기를 나란히 봅니다. 다른 사이트는 참고 시세입니다.
+            </p>
+            {selected.length === 0 ? (
+              <p className="mt-6 rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                위 표에서 비교 체크를 하면 그 부품의 사이트별 시세가 여기에 열립니다. 한 개만 선택해도 됩니다.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-5">
+                {selected.map((item) => (
+                  <SiteOfferTable key={item.slug} product={item} />
+                ))}
               </div>
             )}
           </section>

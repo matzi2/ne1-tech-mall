@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { demoAccounts, isAdmin, isAdminEmail, type Role } from "@/lib/company";
 import type { SessionUser } from "@/components/app-providers";
+import type { MemberRecord } from "@/lib/membership";
+import { daysUntil, formatMemberDate, retentionLabel } from "@/lib/membership";
 
 type StartResponse = {
   ok: boolean;
@@ -15,11 +17,13 @@ type StartResponse = {
   oneTimePassword?: string;
   expiresAt?: string;
   message?: string;
+  membership?: MemberRecord | null;
 };
 
 type VerifyResponse = {
   ok: boolean;
   user?: SessionUser;
+  membership?: MemberRecord | null;
   message?: string;
 };
 
@@ -45,6 +49,7 @@ export function EmailOtpForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [membership, setMembership] = useState<MemberRecord | null>(null);
 
   async function requestOtp(event: React.FormEvent) {
     event.preventDefault();
@@ -63,6 +68,7 @@ export function EmailOtpForm({
       }
       setOtp(data.oneTimePassword ?? "");
       setExpiresAt(data.expiresAt ?? "");
+      setMembership(data.membership ?? null);
       setStep("code");
     } catch {
       setError("1회용 비밀번호를 요청하지 못했습니다.");
@@ -86,9 +92,11 @@ export function EmailOtpForm({
         setError(data.message ?? "확인에 실패했습니다.");
         return;
       }
-      applySession(data.user);
+      applySession(data.user, data.membership);
       const blocked = !isAdmin(data.user) && (next.startsWith("/admin") || next.startsWith("/connect"));
-      if (blocked) {
+      if (data.membership?.status === "withdrawn") {
+        router.push("/account");
+      } else if (blocked) {
         router.push("/mypage");
       } else if (isAdmin(data.user) && next === "/mypage") {
         router.push("/admin");
@@ -109,6 +117,12 @@ export function EmailOtpForm({
           <strong>{email}</strong> 로 쓸 1회용 비밀번호입니다. 비밀번호는 서버에 저장하지 않으며, 한 번만
           유효합니다. 확인 후에는 이 브라우저에서 로그인이 유지됩니다.
         </p>
+        {membership?.status === "withdrawn" ? (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            탈퇴 대기 계정입니다. {formatMemberDate(membership.purgeAt)}까지 {daysUntil(membership.purgeAt)}일 보관하며,
+            확인하면 탈퇴를 취소할 수 있습니다. 보관은 {retentionLabel()}입니다.
+          </p>
+        ) : null}
         <div className="rounded-xl bg-[#0d1117] px-4 py-6 text-center text-white">
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">one-time password</p>
           <p className="mt-2 select-all font-mono text-3xl font-bold tracking-[0.3em]">{otp || "------"}</p>

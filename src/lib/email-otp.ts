@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomInt } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ADMIN_EMAIL, demoAccounts, isAdminEmail, type Role } from "@/lib/company";
+import { getMember, purgeExpiredMembers, upsertActiveMember } from "@/lib/member-store";
 
 const OTP_PATH = path.join("/tmp", "ne1-email-otp.json");
 const SESSION_PATH = path.join("/tmp", "ne1-email-sessions.json");
@@ -72,6 +73,8 @@ export async function startEmailOtp(input: { email: string; name?: string; role?
   if (!email.includes("@")) {
     return { ok: false as const, message: "올바른 이메일을 입력해 주세요." };
   }
+  await purgeExpiredMembers();
+  const membership = await getMember(email);
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   const otps = await readJson<OtpFile>(OTP_PATH, {});
@@ -89,7 +92,11 @@ export async function startEmailOtp(input: { email: string; name?: string; role?
     email,
     expiresAt: otps[email].expiresAt,
     oneTimePassword: code,
-    message: "1회용 비밀번호를 이 작업창에 표시했습니다. 서버에는 저장하지 않습니다.",
+    membership,
+    message:
+      membership?.status === "withdrawn"
+        ? "탈퇴 대기 계정입니다. 확인하면 탈퇴를 취소할 수 있습니다."
+        : "1회용 비밀번호를 이 작업창에 표시했습니다. 서버에는 저장하지 않습니다.",
   };
 }
 
@@ -114,13 +121,19 @@ export async function verifyEmailOtp(input: { email: string; code: string }) {
   await writeJson(OTP_PATH, otps);
 
   const profile = profileForEmail(email, record.name, record.role);
+  await purgeExpiredMembers();
+  const existing = await getMember(email);
+  const membership =
+    existing?.status === "withdrawn"
+      ? existing
+      : await upsertActiveMember(profile);
   const token = randomBytes(32).toString("hex");
   const sessions = await readJson<SessionFile>(SESSION_PATH, {});
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
   sessions[token] = { ...profile, token, expiresAt };
   await writeJson(SESSION_PATH, sessions);
 
-  return { ok: true as const, token, expiresAt, user: profile };
+  return { ok: true as const, token, expiresAt, user: profile, membership };
 }
 
 export async function getSession(token: string | undefined | null) {

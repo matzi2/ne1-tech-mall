@@ -8,6 +8,7 @@ import { company, isAdmin } from "@/lib/company";
 import { releases } from "@/lib/releases";
 import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
+import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { domainPlan } from "@/lib/dns";
 import type { GitHubConnectState } from "@/lib/github-types";
 
@@ -17,7 +18,7 @@ type DomainStatus = {
 };
 
 export default function AdminOpsPage() {
-  const { user, ready, orders, catalog, extras, users, inquiries, confirmTransfer, updateInquiryStatus } = useApp();
+  const { user, ready, orders, catalog, extras, users, inquiries, confirmTransfer, updateInquiryStatus, purgeExpiredAccounts } = useApp();
   const [github, setGithub] = useState<GitHubConnectState | null>(null);
   const [domain, setDomain] = useState<DomainStatus | null>(null);
 
@@ -70,7 +71,8 @@ export default function AdminOpsPage() {
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">회원</p>
-          <p className="mt-1 text-2xl font-bold text-navy">{users.length}</p>
+          <p className="mt-1 text-2xl font-bold text-navy">{users.filter((item) => item.status !== "withdrawn").length}</p>
+          <p className="mt-1 text-xs text-slate-500">탈퇴 대기 {users.filter((item) => item.status === "withdrawn").length}</p>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">견적·문의</p>
@@ -129,6 +131,41 @@ export default function AdminOpsPage() {
                       </Button>
                     ) : null}
                   </div>
+                </li>
+              ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-navy">탈퇴 대기</h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void fetch("/api/auth/membership", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "purge" }),
+              }).then(() => purgeExpiredAccounts());
+            }}
+          >
+            만료분 삭제
+          </Button>
+        </div>
+        {users.filter((item) => item.status === "withdrawn").length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">탈퇴 대기 회원이 없습니다. 보관 기간이 끝나면 여기서 삭제합니다.</p>
+        ) : (
+          <ul className="mt-4 space-y-2 text-sm">
+            {users
+              .filter((item) => item.status === "withdrawn")
+              .map((item) => (
+                <li key={item.email} className="rounded-xl border border-slate-100 px-4 py-3">
+                  <p className="font-semibold">{item.name} · {item.email}</p>
+                  <p className="text-xs text-slate-500">
+                    {formatMemberDate(item.purgeAt)} 삭제 · {daysUntil(item.purgeAt)}일 남음
+                  </p>
                 </li>
               ))}
           </ul>

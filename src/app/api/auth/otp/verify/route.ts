@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   const response = NextResponse.json({
     ok: true,
     user: result.user,
+    membership: "membership" in result ? result.membership : null,
     expiresAt: result.expiresAt,
   });
   response.cookies.set(SESSION_COOKIE, result.token, {
