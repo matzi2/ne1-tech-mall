@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { GabiaLoginForm } from "@/components/gabia-login-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,6 +133,8 @@ export default function DomainConnectPage() {
             </li>
           ))}
         </ul>
+
+        <GabiaLoginForm />
 
         <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
           <p>도메인: {gabiaConsole.domain}</p>
