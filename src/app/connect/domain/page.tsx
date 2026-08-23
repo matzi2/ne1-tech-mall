@@ -211,19 +211,22 @@ export default function DomainConnectPage() {
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => (
+              {records.map((record) => {
+                const applied =
+                  record.action === "keep" || (record.id === "cname-www" && Boolean(wwwLive));
+                return (
                 <tr key={record.id} className="border-b border-slate-100 align-top">
                   <td className="py-2 pr-3">
                     <span
                       className={
-                        record.action === "keep"
+                        applied
                           ? "rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800"
                           : record.action === "add"
                             ? "rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800"
                             : "rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600"
                       }
                     >
-                      {record.action === "keep" ? "이미 적용" : record.action === "add" ? "추가" : "IP 대기"}
+                      {applied ? "이미 적용" : record.action === "add" ? "추가" : "IP 대기"}
                     </span>
                   </td>
                   <td className="py-2 pr-3 font-mono">{record.host}</td>
@@ -239,21 +242,21 @@ export default function DomainConnectPage() {
                     </Button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
 
-        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-          <p className="font-semibold">지금 가비아에서 할 일</p>
+        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
+          <p className="font-semibold">www CNAME 반영됨</p>
           <p>
-            1) 호스트 <code>www</code> · 타입 <code>CNAME</code> · 값 <code>{company.dns.wwwTarget}.</code> 추가 후
-            저장
+            공개 DNS에 <code>www.ne1-tech.co.kr → ne1-tech.co.kr</code> 이 있습니다. MX·TXT·NS는 그대로 두면 됩니다.
           </p>
           <p>
-            2) 호스팅 IP가 있으면 호스트 <code>@</code> · 타입 <code>A</code> · 그 IP를 추가 후 저장
+            다음: 호스팅 IPv4가 정해지면 호스트 <code>@</code> · 타입 <code>A</code> 를 추가합니다. 지금은 사이트가
+            아직 열리지 않습니다.
           </p>
-          <p>3) MX·TXT·NS는 이미 가비아/Daum 값이 있으니 손대지 않습니다.</p>
         </div>
 
         {status?.lookups?.length ? (

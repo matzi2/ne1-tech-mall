@@ -38,14 +38,18 @@ export async function GET() {
   ]);
 
   const live = a.values.length > 0;
+  const wwwLive = cname.values.length > 0;
   return Response.json({
     apex,
     www,
     siteUrl: domainPlan.siteUrl,
     live,
+    wwwLive,
     message: live
       ? "DNS A 기록이 있습니다. 사이트 응답은 호스팅·SSL 상태에 따라 다릅니다."
-      : "아직 A 기록이 없습니다. 아래 표의 IPv4와 네임서버를 등록해야 합니다.",
+      : wwwLive
+        ? `www CNAME(${cname.values.join(", ")}) 이 반영됐습니다. 사이트 접속용 A 레코드는 호스팅 IP가 정해진 뒤 넣습니다.`
+        : "아직 A 기록이 없습니다. 아래 표의 IPv4와 네임서버를 등록해야 합니다.",
     lookups: [a, cname, ns, mx, txt],
   });
 }
