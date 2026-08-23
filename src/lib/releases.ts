@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.21",
+    date: "2026-08-23",
+    title: "QuickConnect DSM 접속",
+    items: [
+      "DSM 주소를 http://QuickConnect.to/matzi57 로 맞춤",
+      "2단계 인증 OTP를 이 창에서 넣고 DSM에 접속",
+      "관리자 NAS 창에서 QuickConnect DSM을 바로 염",
+    ],
+  },
+  {
     version: "0.2.20",
     date: "2026-08-23",
     title: "NAS에 쇼핑몰 소스 올리기",

@@ -20,18 +20,20 @@ import {
   nasRouterForwards,
   nasSteps,
   dsmHref,
+  parseNasHost,
   NAS_DEFAULT_ADDRESS,
   NAS_DEFAULT_USERNAME,
+  NAS_QUICKCONNECT_URL,
   type NasSettings,
   type NasFileEntry,
   type NasSessionPublic,
 } from "@/lib/nas";
 
-const DEFAULT_HREF = dsmHref(NAS_DEFAULT_ADDRESS);
+const DEFAULT_HREF = NAS_QUICKCONNECT_URL;
 
 const PAGES = [
-  { id: "dsm", label: "NAS 접속", href: DEFAULT_HREF },
-  { id: "quick", label: "QuickConnect", href: "https://quickconnect.to/" },
+  { id: "dsm", label: "QuickConnect DSM", href: NAS_QUICKCONNECT_URL },
+  { id: "webdav", label: "WebDAV", href: "https://matzi57.synology.me:5006/" },
 ] as const;
 
 type ProbeResult = {
@@ -52,6 +54,7 @@ export function NasDesk() {
   const [loginHost, setLoginHost] = useState(NAS_DEFAULT_ADDRESS);
   const [loginUser, setLoginUser] = useState(NAS_DEFAULT_USERNAME);
   const [loginPassword, setLoginPassword] = useState("");
+  const [loginOtp, setLoginOtp] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [session, setSession] = useState<NasSessionPublic | null>(null);
   const [files, setFiles] = useState<NasFileEntry[]>([]);
@@ -74,9 +77,14 @@ export function NasDesk() {
       .then((next: NasSessionPublic) => {
         setSession(next);
         if (next.host) {
-          const host = next.port && next.port !== 443 && next.port !== 80 ? `${next.host}:${next.port}` : next.host;
-          setLoginHost(host);
-          setFrameSrc(dsmHref(host));
+          const parsed = parseNasHost(next.port ? `${next.host}:${next.port}` : next.host);
+          const address = parsed?.quickConnectId
+            ? `http://QuickConnect.to/${parsed.quickConnectId}`
+            : next.port && next.port !== 443 && next.port !== 80
+              ? `${next.host}:${next.port}`
+              : next.host;
+          setLoginHost(address);
+          setFrameSrc(dsmHref(address));
         }
         if (next.username) setLoginUser(next.username);
         if (next.connected) {
@@ -94,9 +102,6 @@ export function NasDesk() {
     if (stored) {
       const next = { ...defaultNasSettings, ...(JSON.parse(stored) as NasSettings) };
       setSettings(next);
-      if (next.publicIpv4.trim()) {
-        setLoginHost((prev) => prev || `${next.publicIpv4.trim()}:5001`);
-      }
     }
     const storedChecks = localStorage.getItem(`${NAS_STORAGE}-checks`);
     if (storedChecks) {
@@ -141,12 +146,14 @@ export function NasDesk() {
           host: loginHost,
           username: loginUser,
           password: loginPassword,
+          otp: loginOtp,
         }),
       });
       const next = (await response.json()) as NasSessionPublic;
       setSession(next);
       if (next.connected) {
         setLoginPassword("");
+        setLoginOtp("");
         const stored = {
           ...settings,
           publicIpv4: settings.publicIpv4 || (/^\d{1,3}(\.\d{1,3}){3}$/.test(next.host) ? next.host : settings.publicIpv4),
@@ -182,7 +189,8 @@ export function NasDesk() {
           <div>
             <p className="text-sm font-semibold text-[#000092]">시놀로지 접속 창</p>
             <p className="mt-0.5 text-xs text-slate-500">
-              주소는 matzi57.synology.me:5006, 계정은 matzi2 입니다. 비밀번호만 이 창에 입력하세요.
+              주소는 {NAS_QUICKCONNECT_URL} 입니다. 2단계 인증이면 OTP를 이 창에만 넣으세요. Docker 설치 마법사가 보이면
+              공유 폴더 docker · volume1 로 완료하세요.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -201,7 +209,7 @@ export function NasDesk() {
             <input
               className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none"
               autoComplete="off"
-              placeholder="QuickConnect ID, 공인IP:5001, 또는 회사ID.quickconnect.to"
+              placeholder={NAS_QUICKCONNECT_URL}
               value={loginHost}
               onChange={(event) => setLoginHost(event.target.value)}
             />
@@ -213,11 +221,11 @@ export function NasDesk() {
             <Button
               type="button"
               size="sm"
-              variant={page.id === "quick" ? "navy" : "outline"}
+              variant={page.id === "dsm" ? "navy" : "outline"}
               onClick={() => {
                 setPage(PAGES[0]);
-                setLoginHost("");
-                setFrameSrc(PAGES[0].href);
+                setLoginHost(NAS_QUICKCONNECT_URL);
+                setFrameSrc(NAS_QUICKCONNECT_URL);
                 setStamp(Date.now());
                 setTab("window");
               }}
@@ -244,6 +252,14 @@ export function NasDesk() {
               value={loginPassword}
               onChange={(event) => setLoginPassword(event.target.value)}
             />
+            <Input
+              className="h-10 min-w-[120px] flex-1"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="OTP"
+              value={loginOtp}
+              onChange={(event) => setLoginOtp(event.target.value.replace(/\D/g, "").slice(0, 8))}
+            />
             <Button type="submit" variant="navy" disabled={loginBusy}>
               {loginBusy ? "접속 확인 중…" : "이 계정으로 접속"}
             </Button>
@@ -251,7 +267,12 @@ export function NasDesk() {
         </form>
         <p className="mt-2 truncate font-mono text-xs text-slate-500">{address}</p>
         {session ? (
-          <p className={`mt-1 text-xs ${session.connected ? "text-emerald-700" : "text-amber-800"}`}>{session.lastMessage}</p>
+          <p className={`mt-1 text-xs ${session.connected && !session.needOtp ? "text-emerald-700" : "text-amber-800"}`}>{session.lastMessage}</p>
+        ) : null}
+        {session?.needOtp ? (
+          <p className="mt-1 text-xs font-medium text-amber-900">
+            인증 앱의 6자리 숫자를 OTP 칸에만 넣고 다시 접속하세요. 채팅에는 넣지 마세요.
+          </p>
         ) : null}
       </div>
 
@@ -317,7 +338,7 @@ export function NasDesk() {
       )}
 
       <div className="shrink-0 border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs leading-5 text-amber-950">
-        채팅에 비밀번호를 붙여 넣지 마세요. SSH(22)·DSM(5000·5001)은 인터넷에 상시로 열지 않는 것이 좋습니다.{" "}
+        채팅에 비밀번호·OTP를 붙여 넣지 마세요. DSM은 QuickConnect로 들어갑니다. SSH(22)·DSM(5000·5001)은 인터넷에 상시로 열지 않는 것이 좋습니다.{" "}
         {company.domain}
       </div>
     </div>

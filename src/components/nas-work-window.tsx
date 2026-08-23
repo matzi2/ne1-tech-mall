@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import {
   NAS_DEFAULT_ADDRESS,
   NAS_DEFAULT_USERNAME,
+  NAS_QUICKCONNECT_URL,
+  parseNasHost,
   type NasFileEntry,
   type NasSessionPublic,
 } from "@/lib/nas";
@@ -15,6 +17,7 @@ export function NasWorkWindow() {
   const [host, setHost] = useState(NAS_DEFAULT_ADDRESS);
   const [username, setUsername] = useState(NAS_DEFAULT_USERNAME);
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [session, setSession] = useState<NasSessionPublic | null>(null);
@@ -38,10 +41,18 @@ export function NasWorkWindow() {
   function applySession(next: NasSessionPublic) {
     setSession(next);
     if (next.host) {
-      setHost(next.port && next.port !== 443 && next.port !== 80 ? `${next.host}:${next.port}` : next.host);
+      const parsed = parseNasHost(next.port ? `${next.host}:${next.port}` : next.host);
+      setHost(
+        parsed?.quickConnectId
+          ? `http://QuickConnect.to/${parsed.quickConnectId}`
+          : next.port && next.port !== 443 && next.port !== 80
+            ? `${next.host}:${next.port}`
+            : next.host,
+      );
     }
     if (next.username) setUsername(next.username);
-    if (next.connected) setError("");
+    if (next.connected && !next.needOtp) setError("");
+    if (next.needOtp) setError(next.lastMessage);
   }
 
   async function loadFiles() {
@@ -65,7 +76,7 @@ export function NasWorkWindow() {
       const response = await fetch("/api/connect/nas/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ host, username, password }),
+        body: JSON.stringify({ host, username, password, otp }),
       });
       const next = (await response.json()) as NasSessionPublic;
       applySession(next);
@@ -74,6 +85,7 @@ export function NasWorkWindow() {
         return;
       }
       setPassword("");
+      setOtp("");
       await loadFiles();
     } catch {
       setError("NAS 접속 요청을 보내지 못했습니다.");
@@ -106,8 +118,8 @@ export function NasWorkWindow() {
 
       <form className="space-y-4 px-4 py-5 md:px-6" onSubmit={submit} autoComplete="on">
         <p className="text-sm leading-6 text-slate-600">
-          주소·아이디·비밀번호를 넣고 접속하세요. WebDAV가 열려 있으면 이 작업 서버에서 폴더를 읽고 소스를 올릴 수
-          있습니다. DSM(5000·5001)·SSH(22)는 인터넷에 상시로 열지 마세요.
+          DSM 주소는 {NAS_QUICKCONNECT_URL} 입니다. 아이디·비밀번호를 넣고, 2단계 인증이 켜져 있으면 OTP 칸에 앱
+          숫자만 넣으세요. OTP는 채팅에 넣지 마세요.
         </p>
 
         <div>
@@ -117,7 +129,7 @@ export function NasWorkWindow() {
             name="host"
             autoComplete="url"
             className="mt-1 font-mono"
-            placeholder="matzi57.synology.me:5006"
+            placeholder="http://QuickConnect.to/matzi57"
             value={host}
             onChange={(event) => setHost(event.target.value)}
             required
@@ -149,6 +161,20 @@ export function NasWorkWindow() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required={!connected}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="nas-otp">OTP (2단계 인증)</Label>
+          <Input
+            id="nas-otp"
+            name="otp"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            className="mt-1 font-mono"
+            placeholder="앱에 보이는 6자리"
+            value={otp}
+            onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 8))}
           />
         </div>
 

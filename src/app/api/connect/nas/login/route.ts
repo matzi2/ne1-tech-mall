@@ -18,12 +18,14 @@ export async function POST(request: Request) {
     port?: number;
     username?: string;
     password?: string;
+    otp?: string;
   };
   const state = await loginNas({
     host: body.host ?? "",
     port: typeof body.port === "number" ? body.port : undefined,
     username: body.username ?? "",
     password: body.password ?? "",
+    otp: body.otp ?? "",
   });
   return Response.json(state, { status: state.connected ? 200 : 400 });
 }

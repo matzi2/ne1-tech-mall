@@ -4,7 +4,10 @@ export const NAS_STORAGE = "ne1-synology-v021";
 export const NAS_APP_PORT = 43177;
 export const NAS_GITHUB_URL = "https://github.com/matzi2/ne1-tech-mall.git";
 export const NAS_DEFAULT_PATH = "/volume1/docker/ne1-tech-mall";
-export const NAS_DEFAULT_ADDRESS = "matzi57.synology.me:5006";
+export const NAS_QUICKCONNECT_ID = "matzi57";
+export const NAS_QUICKCONNECT_URL = "http://QuickConnect.to/matzi57";
+export const NAS_DSM_HTTPS_PORT = 61199;
+export const NAS_DEFAULT_ADDRESS = NAS_QUICKCONNECT_URL;
 export const NAS_DEFAULT_USERNAME = "matzi2";
 
 export type NasSessionPublic = {
@@ -15,6 +18,7 @@ export type NasSessionPublic = {
   username: string;
   sid?: string;
   via?: "dsm" | "webdav";
+  needOtp?: boolean;
   connectedAt?: string;
   lastMessage: string;
 };
@@ -25,11 +29,22 @@ export type NasFileEntry = {
   collection: boolean;
 };
 
-export function parseNasHost(raw: string): { host: string; port: number; protocol: "https" | "http" } | null {
+export function parseNasHost(raw: string): {
+  host: string;
+  port: number;
+  protocol: "https" | "http";
+  quickConnectId?: string;
+} | null {
   const value = raw.trim();
   if (!value) return null;
+  const qcPath = value.match(/(?:https?:\/\/)?(?:www\.)?quickconnect\.to\/([a-z0-9-]+)/i);
+  if (qcPath) {
+    const id = qcPath[1].toLowerCase();
+    return { host: `${id}.synology.me`, port: NAS_DSM_HTTPS_PORT, protocol: "https", quickConnectId: id };
+  }
   if (/^[a-z0-9][a-z0-9-]{1,30}$/i.test(value)) {
-    return { host: `${value.toLowerCase()}.quickconnect.to`, port: 443, protocol: "https" };
+    const id = value.toLowerCase();
+    return { host: `${id}.synology.me`, port: NAS_DSM_HTTPS_PORT, protocol: "https", quickConnectId: id };
   }
   try {
     const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
@@ -37,9 +52,29 @@ export function parseNasHost(raw: string): { host: string; port: number; protoco
     if (url.username || url.password) return null;
     const host = url.hostname.replace(/\.$/, "");
     if (!host || host.includes(" ")) return null;
+    const qcHost = host.match(/^([a-z0-9-]+)\.quickconnect\.to$/i);
+    if (qcHost && !host.toLowerCase().includes(".direct.")) {
+      const id = qcHost[1].toLowerCase();
+      return { host: `${id}.synology.me`, port: NAS_DSM_HTTPS_PORT, protocol: "https", quickConnectId: id };
+    }
+    const synoMe = host.match(/^([a-z0-9-]+)\.(?:synology|diskstation)\.me$/i);
+    if (synoMe) {
+      const id = synoMe[1].toLowerCase();
+      const port = url.port ? Number(url.port) : NAS_DSM_HTTPS_PORT;
+      if (!Number.isInteger(port) || port < 1 || port > 65535) return null;
+      return { host: `${id}.synology.me`, port, protocol: url.protocol === "http:" ? "http" : "https", quickConnectId: id };
+    }
     const isQuick = host.endsWith(".quickconnect.to") || host.endsWith(".synology.me") || host.endsWith(".diskstation.me");
     const protocol = url.protocol === "http:" ? "http" : "https";
-    const port = url.port ? Number(url.port) : isQuick ? (protocol === "http" ? 80 : 443) : protocol === "http" ? 5000 : 5001;
+    const port = url.port
+      ? Number(url.port)
+      : isQuick
+        ? protocol === "http"
+          ? 80
+          : 443
+        : protocol === "http"
+          ? 5000
+          : 5001;
     if (!Number.isInteger(port) || port < 1 || port > 65535) return null;
     return { host, port, protocol };
   } catch {
@@ -49,7 +84,8 @@ export function parseNasHost(raw: string): { host: string; port: number; protoco
 
 export function dsmHref(raw: string) {
   const parsed = parseNasHost(raw);
-  if (!parsed) return "https://quickconnect.to/";
+  if (!parsed) return NAS_QUICKCONNECT_URL;
+  if (parsed.quickConnectId) return `http://QuickConnect.to/${parsed.quickConnectId}`;
   return `${parsed.protocol}://${parsed.host}:${parsed.port}/`;
 }
 
@@ -103,7 +139,7 @@ export const nasSteps = [
   {
     id: "forward",
     title: "공유기 포트포워드",
-    body: "외부 TCP 80 → NAS 내부 IP:80, 외부 TCP 443 → NAS 내부 IP:443. DSM(5000·5001), SSH(22), 파일공유(139·445)는 열지 않습니다.",
+    body: "외부 TCP 80 → NAS 내부 IP:80, 외부 TCP 443 → NAS 내부 IP:443. DSM은 QuickConnect(http://QuickConnect.to/matzi57)로 들어갑니다. 5000·5001과 SSH(22)는 인터넷에 상시로 열지 않습니다.",
   },
   {
     id: "package",

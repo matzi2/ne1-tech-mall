@@ -2,6 +2,16 @@
 
 배포할 때마다 버전을 올리고, 이 파일에 히스토리를 남깁니다.
 
+## 0.2.21 — 2026-08-23
+
+시놀로지 DSM을 QuickConnect 주소로 엽니다.
+
+### 변경
+
+- 기본 접속 주소를 http://QuickConnect.to/matzi57 로 맞춤
+- DSM 2단계 인증 OTP를 작업창에서 입력
+- 관리자 NAS 창에서 QuickConnect DSM을 바로 염
+
 ## 0.2.20 — 2026-08-23
 
 시놀로지 `/volume1/docker/ne1-tech-mall` 에 소스를 올립니다.
