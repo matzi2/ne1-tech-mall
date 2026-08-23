@@ -65,15 +65,19 @@ export default function DomainConnectPage() {
         <p className="text-xs font-semibold tracking-wide text-[#0046CA]">DOMAIN · DNS</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">{company.domain}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          공식 주소는 {company.siteUrl} 입니다. 등록기관에 아래 DNS를 넣으면 쇼핑몰이 이 도메인으로
-          열립니다. www는 루트로 붙입니다. 메일은 {company.email}, {company.supportEmail} 입니다.
+          공식 주소는 {company.siteUrl} 입니다. 등록기관은 {company.dns.registrar} 이고, 메일은 Daum으로
+          받습니다. 호스팅 IP가 정해지면 A와 www CNAME만 더 넣으면 쇼핑몰이 이 도메인으로 열립니다.
+          메일은 {company.email}, {company.supportEmail} 입니다.
         </p>
 
         <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+          <p>등록기관: {company.dns.registrar}</p>
+          <p>네임서버: {company.dns.nameservers}</p>
           <p>루트: {domainPlan.apex}</p>
           <p>
             www: {domainPlan.www} → {company.dns.wwwTarget}
           </p>
+          <p>MX: {company.dns.mx}</p>
           <p>메일: {domainPlan.emails.join(" · ")}</p>
           <p>SPF: {company.dns.spf}</p>
           <p>
