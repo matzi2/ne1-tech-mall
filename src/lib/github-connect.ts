@@ -22,6 +22,7 @@ type StoredState = GitHubConnectState & {
   deviceCode: string | null;
   accessToken: string | null;
   lastPollAt?: string | null;
+  expectedLogin?: string | null;
 };
 
 const emptyState = (): StoredState => ({
@@ -50,6 +51,7 @@ function publicView(state: StoredState): GitHubConnectState {
     deviceCode: _deviceCode,
     accessToken: _accessToken,
     lastPollAt: _lastPollAt,
+    expectedLogin: _expectedLogin,
     ...visible
   } = state;
   return visible;
@@ -230,13 +232,15 @@ export async function loginWithPersonalToken(
   if (!trimmed.startsWith("ghp_") && !trimmed.startsWith("github_pat_")) {
     const failed = emptyState();
     failed.status = "error";
-    failed.message = "GitHub personal access token(ghp_ 또는 github_pat_)을 붙여 넣어 주세요.";
+    failed.message =
+      "GitHub 계정 비밀번호는 이 창에서 쓸 수 없습니다. github.com에서 만든 Personal Access Token(ghp_ 또는 github_pat_)을 넣으세요.";
     return publicView(failed);
   }
   const current: StoredState = {
     ...emptyState(),
     status: "authorized",
     accessToken: trimmed,
+    expectedLogin: input.username?.trim() || null,
     repoName: sanitizeRepoName(input.repoName) || REPO_NAME,
     isPrivate: Boolean(input.isPrivate),
     startedAt: new Date().toISOString(),
@@ -281,6 +285,10 @@ async function publishToGitHub(state: StoredState) {
   const user = await githubApi(token, "https://api.github.com/user");
   const login = String(user.login ?? "");
   if (!login) throw new Error("GitHub 사용자 정보를 읽지 못했습니다.");
+  const expected = (state.expectedLogin ?? "").trim();
+  if (expected && expected.toLowerCase() !== login.toLowerCase()) {
+    throw new Error(`토큰 계정(${login})과 입력한 아이디(${expected})가 다릅니다.`);
+  }
   state.login = login;
   state.name = typeof user.name === "string" ? user.name : login;
   state.htmlUrl = typeof user.html_url === "string" ? user.html_url : `https://github.com/${login}`;

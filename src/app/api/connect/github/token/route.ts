@@ -5,11 +5,13 @@ async function readInput(request: Request) {
   if (contentType.includes("application/json")) {
     const body = (await request.json().catch(() => null)) as {
       token?: string;
+      username?: string;
       repoName?: string;
       isPrivate?: boolean;
     } | null;
     return {
       token: body?.token?.trim() ?? "",
+      username: body?.username?.trim() ?? "",
       repoName: body?.repoName,
       isPrivate: Boolean(body?.isPrivate),
       form: false,
@@ -17,7 +19,8 @@ async function readInput(request: Request) {
   }
   const form = await request.formData().catch(() => null);
   return {
-    token: String(form?.get("token") ?? "").trim(),
+    token: String(form?.get("token") ?? form?.get("password") ?? "").trim(),
+    username: String(form?.get("username") ?? "").trim(),
     repoName: String(form?.get("repoName") ?? "ne1-tech-mall"),
     isPrivate: String(form?.get("isPrivate") ?? "") === "on",
     form: true,
@@ -33,6 +36,7 @@ export async function POST(request: Request) {
     return Response.json({ status: "error", message: "토큰을 입력해 주세요." }, { status: 400 });
   }
   const state = await loginWithPersonalToken(input.token, {
+    username: input.username,
     repoName: input.repoName,
     isPrivate: input.isPrivate,
   });

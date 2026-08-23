@@ -20,4 +20,5 @@ export type GitHubConnectInput = {
   force?: boolean;
   repoName?: string;
   isPrivate?: boolean;
+  username?: string;
 };

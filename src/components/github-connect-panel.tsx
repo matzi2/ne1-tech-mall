@@ -129,11 +129,11 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">1단계 · GITHUB 연결 설정</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#000092]">GitHub 저장소 연결</h1>
+        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">다른 방법 · 장치 코드</p>
+        <h2 className="mt-1 text-xl font-bold text-[#000092]">GitHub device flow</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          지금 이 Chrome 작업창에서 GitHub에 연결합니다. 코드가 보이면 토큰을 붙여 넣거나 Authorize를 완료하세요.
-          끝나면 <code>{repoName || "ne1-tech-mall"}</code> 저장소로 소스가 올라갑니다.
+          코드를 발급한 뒤 github.com/login/device 에서 승인하면{" "}
+          <code>{repoName || "ne1-tech-mall"}</code> 저장소로 소스가 올라갑니다.
         </p>
 
         <div className="mt-5 rounded-xl bg-[#0d1117] px-4 py-7 text-center text-white">

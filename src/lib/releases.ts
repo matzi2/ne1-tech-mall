@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.11",
+    date: "2026-08-23",
+    title: "관리자 GitHub 로그인 입력칸",
+    items: [
+      "GitHub 페이지 iframe을 빼고 같은 창에 아이디·토큰 입력칸을 바로 표시",
+      "계정 비밀번호는 받지 않고 Personal Access Token만 이 작업 세션에서 사용",
+    ],
+  },
+  {
     version: "0.2.10",
     date: "2026-08-23",
     title: "Digi-Key · Mouser 기준 비교",
