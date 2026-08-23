@@ -4,6 +4,54 @@ export const NAS_STORAGE = "ne1-synology-v021";
 export const NAS_APP_PORT = 43177;
 export const NAS_GITHUB_URL = "https://github.com/matzi2/ne1-tech-mall.git";
 export const NAS_DEFAULT_PATH = "/volume1/docker/ne1-tech-mall";
+export const NAS_DEFAULT_ADDRESS = "matzi57.synology.me:5006";
+export const NAS_DEFAULT_USERNAME = "matzi2";
+
+export type NasSessionPublic = {
+  connected: boolean;
+  host: string;
+  port: number;
+  protocol: "https" | "http";
+  username: string;
+  sid?: string;
+  via?: "dsm" | "webdav";
+  connectedAt?: string;
+  lastMessage: string;
+};
+
+export type NasFileEntry = {
+  name: string;
+  href: string;
+  collection: boolean;
+};
+
+export function parseNasHost(raw: string): { host: string; port: number; protocol: "https" | "http" } | null {
+  const value = raw.trim();
+  if (!value) return null;
+  if (/^[a-z0-9][a-z0-9-]{1,30}$/i.test(value)) {
+    return { host: `${value.toLowerCase()}.quickconnect.to`, port: 443, protocol: "https" };
+  }
+  try {
+    const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+    const url = new URL(withScheme);
+    if (url.username || url.password) return null;
+    const host = url.hostname.replace(/\.$/, "");
+    if (!host || host.includes(" ")) return null;
+    const isQuick = host.endsWith(".quickconnect.to") || host.endsWith(".synology.me") || host.endsWith(".diskstation.me");
+    const protocol = url.protocol === "http:" ? "http" : "https";
+    const port = url.port ? Number(url.port) : isQuick ? (protocol === "http" ? 80 : 443) : protocol === "http" ? 5000 : 5001;
+    if (!Number.isInteger(port) || port < 1 || port > 65535) return null;
+    return { host, port, protocol };
+  } catch {
+    return null;
+  }
+}
+
+export function dsmHref(raw: string) {
+  const parsed = parseNasHost(raw);
+  if (!parsed) return "https://quickconnect.to/";
+  return `${parsed.protocol}://${parsed.host}:${parsed.port}/`;
+}
 
 export type NasSettings = {
   publicIpv4: string;
