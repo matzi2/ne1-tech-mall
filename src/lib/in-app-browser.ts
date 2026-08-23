@@ -51,9 +51,9 @@ export const WORK_TABS: WorkTab[] = [
     match: (pathname) => pathname.startsWith("/connect/ci"),
   },
   {
-    href: "/connect/domain",
+    href: "/connect/gabia",
     label: "가비아",
-    match: (pathname) => pathname.startsWith("/connect/domain"),
+    match: (pathname) => pathname.startsWith("/connect/gabia") || pathname.startsWith("/connect/domain"),
   },
   {
     href: "/connect/origin",
@@ -74,6 +74,7 @@ export function isWorkSurface(pathname: string) {
 }
 
 export function workAddress(pathname: string, search = "") {
+  if (pathname.startsWith("/connect/gabia")) return "https://accounts.gabia.com/";
   const cleaned = search.replace(/[?&]popup=1/g, "").replace(/^&/, "?");
   const query = cleaned === "?" ? "" : cleaned;
   return `${IN_APP_BROWSER_ORIGIN}${pathname}${query}`;

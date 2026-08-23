@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.7",
+    date: "2026-08-23",
+    title: "가비아 공식 로그인 작업창",
+    items: [
+      "작업창에 가비아 로그인 화면을 그대로 표시",
+      "로그인 후 DNS 관리툴에서 www CNAME 등록",
+    ],
+  },
+  {
     version: "0.1.6",
     date: "2026-08-23",
     title: "가비아 인증번호 확인 후 DNS 이어가기",

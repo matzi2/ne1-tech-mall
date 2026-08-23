@@ -103,7 +103,7 @@ export const siteConnections: SiteConnection[] = [
     name: "NE1-TECH.CO.KR",
     site: "ne1-tech.co.kr",
     purpose: "가비아 DNS 관리툴에 넣을 www CNAME과 A 레코드를 준비하고, 이미 있는 MX/SPF/NS는 유지합니다.",
-    href: "/connect/domain",
+    href: "/connect/gabia",
     windowName: "ne1-domain",
     width: 640,
     height: 720,

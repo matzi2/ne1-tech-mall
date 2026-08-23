@@ -105,6 +105,11 @@ export default function DomainConnectPage() {
         <p className="text-xs font-semibold tracking-wide text-[#0046CA]">GABIA · DNS</p>
         <h1 className="mt-1 text-2xl font-bold text-[#000092]">{gabiaConsole.name}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">{gabiaConsole.notice}</p>
+        <div className="mt-4">
+          <Button type="button" variant="navy" asChild>
+            <a href="/connect/gabia">가비아 로그인 작업창 열기</a>
+          </Button>
+        </div>
 
         <ul className="mt-4 space-y-2">
           {gabiaLinks.map((item) => (

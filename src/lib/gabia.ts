@@ -15,7 +15,7 @@ export const gabiaConsole = {
   loginUrl: "https://accounts.gabia.com/",
   homeUrl: "https://www.gabia.com/",
   notice:
-    "가비아 주소입니다. Preview 안에서는 가비아 화면이 막힐 수 있으니, 주소를 복사해 보스 브라우저에서 여세요.",
+    "가비아 공식 로그인은 /connect/gabia 작업창에서 직접 합니다. 이 페이지는 넣을 DNS 값과 공개 조회입니다.",
   steps: [
     "가비아 홈페이지에 로그인합니다. 아이디·비밀번호·보안 문자를 입력합니다.",
     "상단 [서비스 관리]를 엽니다.",
