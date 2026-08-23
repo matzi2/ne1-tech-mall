@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.19",
+    date: "2026-08-23",
+    title: "관리자 계정에서 NAS 창 표시",
+    items: [
+      "관리자 메일로 로그인하면 운영화면·헤더·노란 막대에서 NAS 창이 보임",
+      "다른 메일로는 쇼핑몰 메뉴에 NAS를 넣지 않음",
+    ],
+  },
+  {
     version: "0.2.18",
     date: "2026-08-23",
     title: "관리자 NAS 개발 창",

@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { domainPlan } from "@/lib/dns";
+import { NasWorkWindow } from "@/components/nas-work-window";
 import type { GitHubConnectState } from "@/lib/github-types";
 
 type DomainStatus = {
@@ -125,12 +126,25 @@ export default function AdminOpsPage() {
           </Button>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold text-navy">NAS 개발 창</h2>
-          <p className="mt-1 text-sm text-slate-500">시놀로지 주소·아이디·비밀번호를 넣고 이 창에서 접속합니다.</p>
-          <Button asChild size="sm" className="mt-4">
-            <Link href="/admin/nas">NAS 창 열기</Link>
+          <h2 className="text-lg font-semibold text-navy">가비아 작업창</h2>
+          <p className="mt-1 text-sm text-slate-500">가비아 사이트에서 DNS를 다룹니다.</p>
+          <Button asChild size="sm" variant="outline" className="mt-4">
+            <Link href="/admin/gabia">가비아 창 열기</Link>
           </Button>
         </article>
+      </section>
+
+      <section className="mt-8">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold text-navy">NAS 개발 창</h2>
+            <p className="text-sm text-slate-500">관리자 메일로 들어온 뒤에만 보입니다. 쇼핑몰 메뉴에는 없습니다.</p>
+          </div>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/admin/nas">창만 크게 보기</Link>
+          </Button>
+        </div>
+        <NasWorkWindow />
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">

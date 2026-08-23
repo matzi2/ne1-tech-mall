@@ -32,9 +32,20 @@ function LoginForm() {
           <p className="mt-1 text-xs">비밀번호는 저장하지 않습니다. 이 브라우저에서 세션이 유지됩니다.</p>
           <div className="mt-5 flex flex-wrap gap-2">
             {isAdmin(user) ? (
-              <Button asChild>
-                <Link href="/admin">운영화면</Link>
-              </Button>
+              <>
+                <Button asChild>
+                  <Link href="/admin">운영화면</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/admin/nas">NAS</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/admin/gabia">가비아</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/admin/github">GitHub</Link>
+                </Button>
+              </>
             ) : (
               <Button asChild>
                 <Link href={next}>마이페이지</Link>

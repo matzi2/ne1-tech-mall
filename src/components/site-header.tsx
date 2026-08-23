@@ -56,12 +56,32 @@ export function SiteHeader() {
             </Link>
           ))}
           {isAdmin(user) ? (
-            <Link
-              href="/admin"
-              className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname.startsWith("/admin") && "underline")}
-            >
-              운영화면
-            </Link>
+            <>
+              <Link
+                href="/admin"
+                className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname === "/admin" && "underline")}
+              >
+                운영화면
+              </Link>
+              <Link
+                href="/admin/github"
+                className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname.startsWith("/admin/github") && "underline")}
+              >
+                GitHub
+              </Link>
+              <Link
+                href="/admin/gabia"
+                className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname.startsWith("/admin/gabia") && "underline")}
+              >
+                가비아
+              </Link>
+              <Link
+                href="/admin/nas"
+                className={cn("font-semibold text-amber-300 hover:text-amber-200", pathname.startsWith("/admin/nas") && "underline")}
+              >
+                NAS
+              </Link>
+            </>
           ) : null}
         </nav>
         <div className="flex items-center gap-2">
@@ -124,9 +144,20 @@ export function SiteHeader() {
             </Link>
           ))}
           {isAdmin(user) ? (
-            <Link href="/admin" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
-              운영화면
-            </Link>
+            <>
+              <Link href="/admin" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
+                운영화면
+              </Link>
+              <Link href="/admin/github" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
+                GitHub
+              </Link>
+              <Link href="/admin/gabia" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
+                가비아
+              </Link>
+              <Link href="/admin/nas" onClick={() => setOpen(false)} className="block py-1 font-semibold text-amber-300">
+                NAS
+              </Link>
+            </>
           ) : null}
           <Link href={user ? "/mypage" : "/login"} onClick={() => setOpen(false)} className="block py-1">
             {user ? "마이페이지" : "로그인"}
