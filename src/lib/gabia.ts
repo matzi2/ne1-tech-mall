@@ -56,8 +56,8 @@ export function gabiaRecords(ipv4 = ""): GabiaRecord[] {
       type: "CNAME",
       value: `${company.dns.wwwTarget}.`,
       ttl: company.dns.ttl,
-      action: "add",
-      note: "www를 루트로 붙입니다. 가비아에서는 값 끝에 마침표가 있어야 합니다.",
+      action: "keep",
+      note: "공개 DNS에 이미 있습니다. 다시 넣지 마세요.",
     },
     {
       id: "mx-10",
@@ -87,6 +87,15 @@ export function gabiaRecords(ipv4 = ""): GabiaRecord[] {
       ttl: company.dns.ttl,
       action: "keep",
       note: "Daum SPF가 이미 있습니다. 덮어쓰지 마세요.",
+    },
+    {
+      id: "txt-dmarc",
+      host: "_dmarc",
+      type: "TXT",
+      value: "v=DMARC1; p=none;",
+      ttl: company.dns.ttl,
+      action: "add",
+      note: "메일 정책. 호스트는 _dmarc, 값에 따옴표 없이 넣습니다.",
     },
     {
       id: "ns",

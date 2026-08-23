@@ -29,12 +29,13 @@ async function resolveSafe(kind: "A" | "CNAME" | "NS" | "MX" | "TXT", hostname: 
 export async function GET() {
   const apex = domainPlan.apex;
   const www = domainPlan.www;
-  const [a, ns, mx, txt, cname] = await Promise.all([
+  const [a, ns, mx, txt, cname, dmarc] = await Promise.all([
     resolveSafe("A", apex),
     resolveSafe("NS", apex),
     resolveSafe("MX", apex),
     resolveSafe("TXT", apex),
     resolveSafe("CNAME", www),
+    resolveSafe("TXT", `_dmarc.${apex}`),
   ]);
 
   const live = a.values.length > 0;
@@ -50,6 +51,6 @@ export async function GET() {
       : wwwLive
         ? `www CNAME(${cname.values.join(", ")}) 이 반영됐습니다. 사이트 접속용 A 레코드는 호스팅 IP가 정해진 뒤 넣습니다.`
         : "아직 A 기록이 없습니다. 아래 표의 IPv4와 네임서버를 등록해야 합니다.",
-    lookups: [a, cname, ns, mx, txt],
+    lookups: [a, cname, ns, mx, txt, dmarc],
   });
 }

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CONNECTIONS_STORAGE, type LocalConnectionState } from "@/lib/connections";
 import { company } from "@/lib/company";
+import type { HostingState } from "@/lib/hosting";
 import { DOMAIN_STORAGE, defaultDnsSettings, domainPlan, type DnsSettings } from "@/lib/dns";
 import {
   GABIA_CHECKLIST_STORAGE,
@@ -41,6 +42,7 @@ export default function DomainConnectPage() {
   const [copied, setCopied] = useState("");
   const [copiedLink, setCopiedLink] = useState("");
   const [checks, setChecks] = useState<boolean[]>(defaultChecks);
+  const [hosting, setHosting] = useState<HostingState | null>(null);
 
   const records = useMemo(() => gabiaRecords(settings.ipv4), [settings.ipv4]);
 
@@ -55,6 +57,10 @@ export default function DomainConnectPage() {
       if (Array.isArray(next) && next.length === defaultChecks.length) setChecks(next);
     }
     refresh();
+    fetch("/api/connect/hosting/status")
+      .then((response) => response.json())
+      .then((next: HostingState) => setHosting(next))
+      .catch(() => setHosting(null));
   }, []);
 
   function refresh() {
@@ -180,8 +186,17 @@ export default function DomainConnectPage() {
               onChange={(event) => setSettings({ ...settings, ipv4: event.target.value })}
             />
             <p className="mt-1 text-xs text-slate-500">
-              IP가 없으면 A는 보류합니다. www CNAME은 지금 가비아에 넣을 수 있습니다.
+              {hosting?.message ||
+                "이 작업 서버에서는 고정 공인 IPv4를 만들 수 없습니다. IP가 생기면 숫자만 넣고 A를 추가하세요."}
             </p>
+            {hosting?.tunnelUrl ? (
+              <p className="mt-2 text-sm">
+                임시 공개 주소:{" "}
+                <a href={hosting.tunnelUrl} className="break-all font-mono text-[#0046CA] underline">
+                  {hosting.tunnelUrl}
+                </a>
+              </p>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="navy">
@@ -212,8 +227,13 @@ export default function DomainConnectPage() {
             </thead>
             <tbody>
               {records.map((record) => {
+                const dmarcLive = status?.lookups.some(
+                  (item) => item.hostname.startsWith("_dmarc.") && item.values.length > 0,
+                );
                 const applied =
-                  record.action === "keep" || (record.id === "cname-www" && Boolean(wwwLive));
+                  record.action === "keep" ||
+                  (record.id === "cname-www" && Boolean(wwwLive)) ||
+                  (record.id === "txt-dmarc" && Boolean(dmarcLive));
                 return (
                 <tr key={record.id} className="border-b border-slate-100 align-top">
                   <td className="py-2 pr-3">
@@ -254,8 +274,10 @@ export default function DomainConnectPage() {
             공개 DNS에 <code>www.ne1-tech.co.kr → ne1-tech.co.kr</code> 이 있습니다. MX·TXT·NS는 그대로 두면 됩니다.
           </p>
           <p>
-            다음: 호스팅 IPv4가 정해지면 호스트 <code>@</code> · 타입 <code>A</code> 를 추가합니다. 지금은 사이트가
-            아직 열리지 않습니다.
+            지금 추가: 호스트 <code>_dmarc</code> · 타입 <code>TXT</code> · 값 <code>v=DMARC1; p=none;</code>
+          </p>
+          <p>
+            A 레코드(호스트 @)는 고정 호스팅 IPv4가 생기면 넣습니다. 작업 서버 IP를 넣으면 사이트가 곧 끊깁니다.
           </p>
         </div>
 

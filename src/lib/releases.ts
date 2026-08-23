@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.8",
+    date: "2026-08-23",
+    title: "추가 DNS와 호스팅 IP 안내",
+    items: [
+      "가비아에 _dmarc TXT 추가",
+      "고정 공인 IPv4는 호스팅 서버가 정해진 뒤 A 레코드로 등록",
+    ],
+  },
+  {
     version: "0.1.7",
     date: "2026-08-23",
     title: "가비아 공식 로그인 작업창",

@@ -22,17 +22,16 @@ export function GabiaDesk() {
   return (
     <div className="flex h-[calc(100vh-7.5rem)] min-h-[640px] flex-col bg-[#f1f3f4]">
       <div className="shrink-0 border-b border-[#dadce0] bg-white px-4 py-3">
-        <p className="text-sm font-semibold text-[#000092]">로그인됨 · 이제 DNS만 넣으면 됩니다</p>
+        <p className="text-sm font-semibold text-[#000092]">추가 DNS · _dmarc 를 넣으세요</p>
         <p className="mt-1 text-sm leading-6 text-slate-700">
-          아래가 가비아 DNS 관리툴입니다. <strong>ne1-tech.co.kr</strong> 을 고른 뒤 레코드를 추가하고 반드시{" "}
-          <strong>저장</strong>을 누르세요.
+          <strong>ne1-tech.co.kr</strong> 을 고른 뒤 아래만 추가하고 <strong>저장</strong>을 누르세요. www CNAME · MX ·
+          SPF · NS는 이미 있으니 다시 넣지 마세요.
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-slate-700">
           <li>
-            호스트 <code>www</code> · 타입 <code>CNAME</code> · 값 <code>{company.dns.wwwTarget}.</code> (끝 마침표)
+            추가: 호스트 <code>_dmarc</code> · 타입 <code>TXT</code> · 값 <code>v=DMARC1; p=none;</code>
           </li>
-          <li>MX · TXT · NS 는 이미 있으니 건드리지 않습니다.</li>
-          <li>호스팅 IP가 아직 없어 A 레코드는 보류합니다.</li>
+          <li>A 레코드(호스트 @)는 고정 호스팅 IPv4가 생기면 숫자 IP만 넣습니다. 지금은 보류입니다.</li>
         </ol>
         <div className="mt-3 flex flex-wrap gap-2">
           {PAGES.map((item) => (
@@ -65,7 +64,7 @@ export function GabiaDesk() {
       />
 
       <div className="shrink-0 border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs leading-5 text-amber-950">
-        지금 넣을 값: www · CNAME · {company.dns.wwwTarget}. (끝 마침표 포함) · {gabiaLinks[2].href}
+        지금 추가: _dmarc · TXT · v=DMARC1; p=none; · {gabiaLinks[2].href}
       </div>
     </div>
   );
