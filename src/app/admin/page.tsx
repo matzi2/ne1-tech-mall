@@ -10,7 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { domainPlan } from "@/lib/dns";
-import { GitHubDesk } from "@/components/github-desk";
+import { GitHubWindows } from "@/components/github-windows";
 import type { GitHubConnectState } from "@/lib/github-types";
 
 type DomainStatus = {
@@ -108,14 +108,14 @@ export default function AdminOpsPage() {
       <section className="mt-8">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="text-lg font-semibold text-navy">GitHub 로그인</h2>
-            <p className="text-sm text-slate-500">관리자 계정에서만 이 창이 열립니다. 쇼핑몰 화면에는 없습니다.</p>
+            <h2 className="text-lg font-semibold text-navy">GitHub 로그인 · 토큰 정보</h2>
+            <p className="text-sm text-slate-500">로그인 창과 토큰 정보 창을 따로 둡니다. 쇼핑몰 화면에는 없습니다.</p>
           </div>
           <Button asChild size="sm" variant="outline">
             <Link href="/admin/github">창만 크게 보기</Link>
           </Button>
         </div>
-        <GitHubDesk />
+        <GitHubWindows />
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">

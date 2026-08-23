@@ -18,7 +18,7 @@ export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
   legalName: "주식회사 엔이원텍",
-  version: "0.2.11",
+  version: "0.2.12",
   releasedAt: "2026-08-23",
   domain: "NE1-TECH.CO.KR",
   siteUrl: "https://ne1-tech.co.kr",

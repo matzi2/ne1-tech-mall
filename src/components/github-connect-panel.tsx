@@ -24,7 +24,13 @@ const idle: GitHubConnectState = {
   startedAt: null,
 };
 
-export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }) {
+export function GitHubConnectPanel({
+  autoStart = true,
+  username = "",
+}: {
+  autoStart?: boolean;
+  username?: string;
+}) {
   const [state, setState] = useState<GitHubConnectState>(idle);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -112,7 +118,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
       const response = await fetch("/api/connect/github/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, repoName, isPrivate }),
+        body: JSON.stringify({ token, username, repoName, isPrivate }),
       });
       const next = (await response.json()) as GitHubConnectState;
       apply(next);
@@ -127,10 +133,18 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
   const connected = state.status === "published" || state.status === "authorized";
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">다른 방법 · 장치 코드</p>
-        <h2 className="mt-1 text-xl font-bold text-[#000092]">GitHub device flow</h2>
+    <div id="github-token-desk" className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-4 py-3 md:px-6">
+        <p className="text-sm font-semibold text-[#000092]">관리자 · GitHub 토큰 정보 창</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          장치 코드와 Personal Access Token은 이 창에서만 다룹니다. 로그인 아이디는 위 창에 있습니다.
+        </p>
+      </div>
+
+      <div className="space-y-6 px-4 py-5 md:px-6">
+      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p className="text-xs font-semibold tracking-wide text-[#0046CA]">1단계 · 장치 코드</p>
+        <h2 className="mt-1 text-xl font-bold text-[#000092]">GitHub 저장소 연결</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           코드를 발급한 뒤 github.com/login/device 에서 승인하면{" "}
           <code>{repoName || "ne1-tech-mall"}</code> 저장소로 소스가 올라갑니다.
@@ -187,7 +201,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
         <h2 className="text-lg font-semibold text-[#000092]">저장소 설정</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">
           <div>
@@ -213,14 +227,16 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
         <p className="mt-2 text-xs text-slate-500">원격 이름 github · 브랜치 main · origin(Cursor)은 유지합니다.</p>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#000092]">다른 방법 · Personal Access Token</h2>
+      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <h2 className="text-lg font-semibold text-[#000092]">2단계 · Personal Access Token</h2>
         <p className="mt-1 text-sm text-slate-600">
-          장치 코드 창이 막히면 GitHub에서 <code>repo</code> 권한 토큰을 만들어 붙여 넣으세요.
+          장치 코드가 막히면 GitHub에서 <code>repo</code> 권한 토큰을 만들어 이 칸에만 붙여 넣으세요.
+          토큰은 이 작업 세션에만 두고 git에는 저장하지 않습니다.
+          {username.trim() ? ` 로그인 창 아이디: ${username.trim()}` : " 위 로그인 창에 아이디를 먼저 넣으면 토큰 계정과 맞는지 확인합니다."}
         </p>
         <form className="mt-4 space-y-3" onSubmit={submitToken}>
           <textarea
-            className="min-h-24 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+            className="min-h-24 w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm"
             placeholder="ghp_... 또는 github_pat_..."
             value={token}
             onChange={(event) => setToken(event.target.value)}
@@ -230,6 +246,7 @@ export function GitHubConnectPanel({ autoStart = true }: { autoStart?: boolean }
           </Button>
         </form>
       </section>
+      </div>
     </div>
   );
 }

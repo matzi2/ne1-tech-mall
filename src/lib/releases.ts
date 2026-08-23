@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.12",
+    date: "2026-08-23",
+    title: "GitHub 로그인 창과 토큰 정보 창 분리",
+    items: [
+      "관리자 GitHub 화면을 로그인 창과 토큰 정보 창으로 다시 나눔",
+      "아이디는 로그인 창, 장치 코드·토큰은 토큰 정보 창에서 입력",
+    ],
+  },
+  {
     version: "0.2.11",
     date: "2026-08-23",
     title: "관리자 GitHub 로그인 입력칸",
