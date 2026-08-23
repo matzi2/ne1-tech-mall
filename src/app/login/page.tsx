@@ -6,12 +6,17 @@ import { Suspense } from "react";
 import { EmailOtpForm } from "@/components/email-otp-form";
 import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
-import { ADMIN_EMAIL, company, isAdmin } from "@/lib/company";
+import { company, isAdmin } from "@/lib/company";
 
 function LoginForm() {
   const params = useSearchParams();
   const { user, logout, ready } = useApp();
-  const next = params.get("next") || (isAdmin(user) ? "/admin" : "/mypage");
+  const requestedNext = params.get("next") || "";
+  const next = isAdmin(user)
+    ? requestedNext || "/admin"
+    : requestedNext.startsWith("/admin") || requestedNext.startsWith("/connect")
+      ? "/mypage"
+      : requestedNext || "/mypage";
 
   if (!ready) {
     return <div className="p-10 text-sm text-slate-500">로그인 화면을 준비하는 중입니다.</div>;
@@ -51,10 +56,10 @@ function LoginForm() {
         <h1 className="mt-2 text-2xl font-bold text-navy">이메일 로그인</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">
           비밀번호는 서버에 저장하지 않습니다. 이메일로 받은 1회용 비밀번호로 확인하면, 이후에는 이
-          브라우저에서 로그인이 유지됩니다. 관리자는 {ADMIN_EMAIL} 입니다.
+          브라우저에서 로그인이 유지됩니다. 관리자 화면은 관리자 이메일로 접속한 뒤에만 보입니다.
         </p>
         <div className="mt-6">
-          <EmailOtpForm initialEmail={params.get("email") ?? ADMIN_EMAIL} next={next} />
+          <EmailOtpForm initialEmail={params.get("email") ?? ""} next={params.get("next") || "/mypage"} />
         </div>
         <div className="mt-4 flex justify-between text-sm">
           <Link href="/find-account" className="text-[#0046CA]">

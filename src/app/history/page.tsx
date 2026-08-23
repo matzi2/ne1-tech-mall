@@ -28,10 +28,6 @@ export default function HistoryPage() {
         ))}
       </ol>
       <p className="mt-6 text-sm">
-        <Link href="/admin" className="text-[#0046CA]">
-          운영화면
-        </Link>
-        {" · "}
         <Link href="/" className="text-[#0046CA]">
           쇼핑몰
         </Link>

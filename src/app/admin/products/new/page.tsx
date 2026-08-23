@@ -95,9 +95,9 @@ export default function AdminProductNewPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-navy">관리자 로그인이 필요합니다.</h1>
-        <p className="mt-2 text-slate-500">상품 등록은 관리자 계정으로만 할 수 있습니다.</p>
+        <p className="mt-2 text-slate-500">상품 등록은 관리자 이메일로 로그인한 뒤에만 할 수 있습니다.</p>
         <Button asChild className="mt-6">
-          <Link href="/login?next=/admin/products/new&email=matzi57@gmail.com">로그인 화면 열기</Link>
+          <Link href="/login?next=/admin/products/new">로그인 화면 열기</Link>
         </Button>
       </div>
     );

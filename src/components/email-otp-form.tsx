@@ -6,7 +6,7 @@ import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ADMIN_EMAIL, demoAccounts, type Role } from "@/lib/company";
+import { demoAccounts, isAdmin, isAdminEmail, type Role } from "@/lib/company";
 import type { SessionUser } from "@/components/app-providers";
 
 type StartResponse = {
@@ -87,7 +87,14 @@ export function EmailOtpForm({
         return;
       }
       applySession(data.user);
-      router.push(data.user.role === "admin" && next === "/mypage" ? "/admin" : next);
+      const blocked = !isAdmin(data.user) && (next.startsWith("/admin") || next.startsWith("/connect"));
+      if (blocked) {
+        router.push("/mypage");
+      } else if (isAdmin(data.user) && next === "/mypage") {
+        router.push("/admin");
+      } else {
+        router.push(next);
+      }
     } catch {
       setError("확인에 실패했습니다.");
     } finally {
@@ -144,7 +151,7 @@ export function EmailOtpForm({
           className="mt-1"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder={ADMIN_EMAIL}
+          placeholder="이메일 주소"
           required
           autoFocus
         />
@@ -154,23 +161,22 @@ export function EmailOtpForm({
         {submitLabel}
       </Button>
       <div className="space-y-2">
-        <p className="text-xs text-slate-500">작업용 이메일</p>
-        {demoAccounts.map((account) => (
-          <button
-            key={account.email}
-            type="button"
-            className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-left text-sm hover:bg-slate-50"
-            onClick={() => setEmail(account.email)}
-          >
-            <span>
-              <span className="font-semibold text-[#000092]">{account.type}</span>
-              <span className="ml-2 text-slate-500">{account.email}</span>
-            </span>
-            {account.role === "admin" ? (
-              <span className="text-xs font-semibold text-amber-700">운영화면</span>
-            ) : null}
-          </button>
-        ))}
+        <p className="text-xs text-slate-500">회원 로그인 예시</p>
+        {demoAccounts
+          .filter((account) => !isAdminEmail(account.email))
+          .map((account) => (
+            <button
+              key={account.email}
+              type="button"
+              className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-left text-sm hover:bg-slate-50"
+              onClick={() => setEmail(account.email)}
+            >
+              <span>
+                <span className="font-semibold text-[#000092]">{account.type}</span>
+                <span className="ml-2 text-slate-500">{account.email}</span>
+              </span>
+            </button>
+          ))}
       </div>
     </form>
   );

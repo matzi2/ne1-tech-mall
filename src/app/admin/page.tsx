@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
-import { ADMIN_EMAIL, company, isAdmin } from "@/lib/company";
+import { company, isAdmin } from "@/lib/company";
 import { releases } from "@/lib/releases";
 import { formatPrice } from "@/lib/format";
 import { domainPlan } from "@/lib/dns";
@@ -37,9 +37,9 @@ export default function AdminOpsPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-navy">운영화면은 관리자만 봅니다.</h1>
-        <p className="mt-2 text-sm text-slate-500">관리자 계정은 {ADMIN_EMAIL} 입니다.</p>
+        <p className="mt-2 text-sm text-slate-500">관리자 이메일로 로그인한 뒤에만 엽니다.</p>
         <Button asChild className="mt-6">
-          <Link href={`/login?next=/admin&email=${encodeURIComponent(ADMIN_EMAIL)}`}>이메일 로그인</Link>
+          <Link href="/login?next=/admin">이메일 로그인</Link>
         </Button>
       </div>
     );

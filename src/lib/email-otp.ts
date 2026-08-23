@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { demoAccounts, type Role } from "@/lib/company";
+import { ADMIN_EMAIL, demoAccounts, isAdminEmail, type Role } from "@/lib/company";
 
 const OTP_PATH = path.join("/tmp", "ne1-email-otp.json");
 const SESSION_PATH = path.join("/tmp", "ne1-email-sessions.json");
@@ -41,14 +41,16 @@ function hashCode(email: string, code: string) {
 
 export function profileForEmail(email: string, name?: string, role?: Role): SessionProfile {
   const normalized = normalizeEmail(email);
-  const demo = demoAccounts.find((account) => account.email === normalized);
-  if (demo) {
-    return { email: demo.email, name: demo.name, role: demo.role };
+  if (isAdminEmail(normalized)) {
+    const admin = demoAccounts.find((account) => account.email === ADMIN_EMAIL);
+    return { email: ADMIN_EMAIL, name: admin?.name ?? name?.trim() ?? "정범", role: "admin" };
   }
+  const demo = demoAccounts.find((account) => account.email === normalized);
+  const requested = role === "admin" ? undefined : role;
   return {
     email: normalized,
-    name: name?.trim() || normalized.split("@")[0] || "회원",
-    role: role ?? "member",
+    name: name?.trim() || demo?.name || normalized.split("@")[0] || "회원",
+    role: requested ?? (demo?.role === "admin" ? "member" : demo?.role) ?? "member",
   };
 }
 

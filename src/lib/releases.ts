@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.3",
+    date: "2026-08-23",
+    title: "관리자 화면은 관리자 메일만",
+    items: [
+      "관리자 이메일로 로그인해야 운영화면이 보임",
+      "다른 메일로는 쇼핑몰·마이페이지만",
+    ],
+  },
+  {
     version: "0.2.2",
     date: "2026-08-23",
     title: "개발 작업실 분리",

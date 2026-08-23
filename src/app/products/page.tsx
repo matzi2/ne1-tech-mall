@@ -87,7 +87,7 @@ function ProductsBody() {
         <div className="mt-10 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="font-semibold text-navy">검색 결과가 없습니다.</p>
           <p className="mt-2 text-sm text-slate-500">
-            다른 키워드를 치거나 카테고리를 바꿔 보세요. 관리자는 파일·사진·문서로 상품을 등록할 수 있습니다.
+            다른 키워드를 치거나 카테고리를 바꿔 보세요. 찾는 품목이 없으면 견적·문의로 남겨 주세요.
           </p>
         </div>
       ) : (
