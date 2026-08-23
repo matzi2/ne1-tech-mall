@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.15",
+    date: "2026-08-23",
+    title: "가비아 문자 발송 한도 안내",
+    items: [
+      "문자 3회를 넘기면 다시 보내지 않고 마지막 번호 또는 이메일로 이어감",
+      "한도 초과를 인증 실패로 잘못 표시하던 안내를 고침",
+    ],
+  },
+  {
     version: "0.2.14",
     date: "2026-08-23",
     title: "GitHub 아이디만으로 로그인",

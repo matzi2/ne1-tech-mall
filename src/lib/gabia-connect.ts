@@ -59,10 +59,18 @@ function publicView(state: StoredState): GabiaPublicState {
   };
 }
 
+function isSendLimitMessage(value?: string | null) {
+  return /최대 발송|발송 횟수/.test(value ?? "");
+}
+
 async function load(): Promise<StoredState> {
   try {
     const raw = await readFile(STATE_PATH, "utf8");
-    return { ...empty(), ...(JSON.parse(raw) as StoredState) };
+    const state = { ...empty(), ...(JSON.parse(raw) as StoredState) };
+    if (state.status === "foreign" && !state.verifyType) {
+      state.verifyType = "FOREIGN";
+    }
+    return state;
   } catch {
     return empty();
   }
@@ -430,16 +438,20 @@ export async function gabiaForeignSend(input: { userId: string; password: string
   );
   const data = (await response.json().catch(() => ({}))) as GabiaAuthJson;
   if (failedAuth(data, response)) {
-    state.status = "foreign";
-    state.lastAction = "verify_fail";
-    state.message =
+    const message =
       authMessage(data, "foreign") || "인증번호 발송에 실패했습니다. 비밀번호를 다시 넣고 눌러 주세요.";
+    state.status = "foreign";
+    state.lastAction = isSendLimitMessage(message) ? "send_limit" : "verify_fail";
+    state.message = isSendLimitMessage(message)
+      ? `${message} 문자는 더 보내지 마세요. 마지막 문자 숫자를 넣고 인증하거나, 이메일로 받으세요.`
+      : message;
     await save(state);
     return publicView(state);
   }
   const token = extractAuthToken(data);
   state.status = "foreign";
   state.userId = input.userId.trim();
+  state.verifyType = state.verifyType || "FOREIGN";
   state.foreignChannel = input.channel;
   state.foreignAuthToken = token ?? state.foreignAuthToken;
   state.sendCount += 1;
@@ -504,8 +516,12 @@ export async function gabiaForeignVerify(input: {
   if (failedAuth(data, response)) {
     state.status = "foreign";
     state.lastAction = "verify_fail";
-    state.message =
-      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 이미 보낸 ${state.sendCount}통 중 이전 문자는 쓰지 마세요. [인증번호 다시 받기]를 누른 뒤, 새로 온 숫자만 넣으세요.`;
+    const detail = authMessage(data, "foreign") || "인증번호가 맞지 않습니다.";
+    state.message = isSendLimitMessage(detail)
+      ? `${detail} 문자는 더 보내지 마세요. 마지막 문자 숫자만 넣거나 이메일로 받으세요.`
+      : state.sendCount >= 3
+        ? `${detail} DNS는 아직 등록되지 않았습니다. 문자는 더 보낼 수 없습니다. 마지막 문자 숫자만 넣거나 이메일로 받으세요.`
+        : `${detail} DNS는 아직 등록되지 않았습니다. 이미 보낸 ${state.sendCount}통 중 이전 문자는 쓰지 마세요. 새로 받은 숫자만 넣으세요.`;
     await save(state);
     return publicView(state);
   }

@@ -3,6 +3,7 @@ export type GabiaLastAction =
   | "login"
   | "sms_sent"
   | "email_sent"
+  | "send_limit"
   | "verify_ok"
   | "verify_fail"
   | "dns_ok"

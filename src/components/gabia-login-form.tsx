@@ -26,6 +26,9 @@ function resultTone(state: GabiaPublicState) {
   if (state.lastAction === "sms_sent" || state.lastAction === "email_sent" || state.lastAction === "verify_ok") {
     return "border-sky-300 bg-sky-50 text-sky-950";
   }
+  if (state.lastAction === "send_limit") {
+    return "border-amber-300 bg-amber-50 text-amber-950";
+  }
   if (state.lastAction === "verify_fail" || state.lastAction === "dns_fail" || state.status === "error") {
     return "border-red-300 bg-red-50 text-red-800";
   }
@@ -38,6 +41,8 @@ function actionLabel(state: GabiaPublicState) {
       return "휴대전화로 인증번호를 보냈습니다";
     case "email_sent":
       return "이메일로 인증번호를 보냈습니다";
+    case "send_limit":
+      return "문자 발송 한도 · 마지막 번호만 사용";
     case "verify_ok":
       return "인증번호 확인됨";
     case "verify_fail":
@@ -162,6 +167,11 @@ export function GabiaLoginForm() {
 
   const ok = state?.status === "ready" || state?.status === "applied";
   const foreign = state?.status === "foreign";
+  const sendLimited =
+    Boolean(state) &&
+    (state.lastAction === "send_limit" ||
+      state.sendCount >= 3 ||
+      /최대 발송|발송 횟수/.test(state.message ?? ""));
 
   return (
     <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -191,11 +201,13 @@ export function GabiaLoginForm() {
             가비아 등록 휴대전화 {state.phoneMasked ?? "(확인 중)"} · 메일 {state.emailMasked ?? "(확인 중)"}
           </p>
           <p className="text-sm leading-6 text-slate-700">
-            {state.lastAction === "verify_fail"
-              ? `가비아가 숫자를 거절했습니다. ${state.sendCount}번째까지 보낸 문자 중 예전 번호는 무효입니다. 비밀번호를 넣고 [휴대전화로 인증번호 다시 받기]를 누른 다음, 새로 온 문자 숫자만 넣으세요.`
-              : state.hasForeignToken
-                ? `인증번호가 준비됐습니다. ${state.sendCount}번째로 받은 문자의 숫자만 넣으세요. 이전 문자는 쓰지 마세요.`
-                : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
+            {sendLimited
+              ? "휴대전화 문자는 더 보낼 수 없습니다. 마지막 문자에 적힌 숫자만 넣고 인증하세요. 그 문자가 없으면 이메일로 받으세요. 그래도 안 되면 가비아 고객센터 1544-4370입니다."
+              : state.lastAction === "verify_fail"
+                ? `가비아가 숫자를 거절했습니다. ${state.sendCount}번째까지 보낸 문자 중 예전 번호는 무효입니다. 마지막 문자 숫자만 넣으세요.`
+                : state.hasForeignToken
+                  ? `인증번호가 준비됐습니다. ${state.sendCount}번째로 받은 문자의 숫자만 넣으세요. 이전 문자는 쓰지 마세요.`
+                  : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
           </p>
           <div>
             <Label htmlFor="gabia-id-f">가비아 아이디</Label>
@@ -212,8 +224,13 @@ export function GabiaLoginForm() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="navy" disabled={busy || !password} onClick={() => sendForeign("sms")}>
-              휴대전화로 인증번호 다시 받기
+            <Button
+              type="button"
+              variant="navy"
+              disabled={busy || !password || sendLimited}
+              onClick={() => sendForeign("sms")}
+            >
+              {sendLimited ? "문자 발송 한도 초과" : "휴대전화로 인증번호 다시 받기"}
             </Button>
             <Button type="button" variant="outline" disabled={busy || !password} onClick={() => sendForeign("ems")}>
               이메일로 인증번호
