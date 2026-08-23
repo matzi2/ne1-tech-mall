@@ -11,7 +11,7 @@ export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
   legalName: "주식회사 엔이원텍",
-  version: "0.1.3",
+  version: "0.1.4",
   releasedAt: "2026-08-23",
   domain: "NE1-TECH.CO.KR",
   siteUrl: "https://ne1-tech.co.kr",
@@ -24,7 +24,7 @@ export const company = {
     wwwTarget: "ne1-tech.co.kr",
     mx: "10 aspmx.daum.net, 20 alt.aspmx.daum.net",
     spf: "v=spf1 include:_spf.daum.net ~all",
-    note: "도메인은 가비아에 등록되어 있습니다. 메일은 Daum(aspmx.daum.net)으로 받습니다. 호스팅 IPv4가 정해지면 A 레코드와 www CNAME을 넣으면 쇼핑몰이 열립니다.",
+    note: "도메인은 가비아에 등록되어 있습니다. 메일은 Daum(aspmx.daum.net)으로 받습니다. 가비아 DNS 관리툴에서 www CNAME(ne1-tech.co.kr.)을 넣고, 호스팅 IPv4가 정해지면 A(@)를 추가합니다.",
   },
   tagline: "산업용 전자부품, 품목별로 바로 찾습니다.",
   description:

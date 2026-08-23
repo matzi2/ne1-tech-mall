@@ -10,7 +10,7 @@ const links = [
   { href: "/admin", label: "운영화면" },
   { href: "/admin/products/new", label: "상품등록" },
   { href: "/connect", label: "연결" },
-  { href: "/connect/domain", label: "도메인" },
+  { href: "/connect/domain", label: "가비아" },
   { href: "/products", label: "쇼핑몰" },
   { href: "/history", label: "히스토리" },
 ];

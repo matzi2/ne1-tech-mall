@@ -52,7 +52,7 @@ export const WORK_TABS: WorkTab[] = [
   },
   {
     href: "/connect/domain",
-    label: "도메인",
+    label: "가비아",
     match: (pathname) => pathname.startsWith("/connect/domain"),
   },
   {

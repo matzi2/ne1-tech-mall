@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.1.3** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.1.4** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -22,7 +22,7 @@ npm run dev
 `/connect/github` 가 Chrome 모양의 인앱 작업창입니다. 상단 탭에서 GitHub, 도메인, 카카오, 카드, 송금 등을 같은 창에서 전환합니다.
 
 - GitHub: 장치 코드 확인 후 같은 창에 토큰을 붙여 넣어 `ne1-tech-mall` 저장소 생성·푸시
-- 도메인 · DNS: `/connect/domain` 에서 `ne1-tech.co.kr` A/CNAME/MX/NS 를 저장하고 공개 DNS를 조회
+- 도메인 · DNS: `/connect/domain` 가비아 DNS 관리툴 순서로 `www` CNAME과 A 레코드를 준비·조회
 - 카카오: MATCHDOC과 같은 `/oauth2/authorization/kakao` → `/redirect?accesstoken=` → `localStorage.accessToken`
 
 카카오 REST 키와 카드사 PG 키가 없으면 작업용 화면으로 진행합니다. 키를 넣으면 실제 카카오 로그인으로 넘어갑니다.
@@ -56,12 +56,12 @@ npm run dev
 
 공식 주소는 `https://ne1-tech.co.kr` 입니다. 등록기관에 넣을 레코드는 `/connect/domain` 과 회사소개에 있습니다.
 
-등록기관은 **가비아** 입니다. 메일은 Daum(`aspmx.daum.net`)으로 수신합니다.
+등록기관은 **가비아** 입니다. 메일은 Daum(`aspmx.daum.net`)으로 수신합니다. 가비아 설정은 `/connect/domain` 작업창에서 진행합니다. 로그인은 보안 문자 때문에 가비아 사이트에서 하고, 아래 값을 그대로 넣습니다.
 
 | 호스트 | 유형 | 값 | 설명 |
 | --- | --- | --- | --- |
 | @ | A | 호스팅 IPv4 (미등록) | `ne1-tech.co.kr` → 쇼핑몰 서버 |
-| www | CNAME | ne1-tech.co.kr (미등록) | `www.ne1-tech.co.kr` 를 루트로 |
+| www | CNAME | `ne1-tech.co.kr.` (가비아에 추가) | `www.ne1-tech.co.kr` 를 루트로. 값 끝 마침표 필수 |
 | @ | MX | `10 aspmx.daum.net`, `20 alt.aspmx.daum.net` | sales@ / support@ |
 | @ | TXT | `v=spf1 include:_spf.daum.net ~all` | 메일 발신 확인 |
 | @ | NS | `ns.gabia.co.kr`, `ns1.gabia.co.kr`, `ns.gabia.net` | 가비아 네임서버 |

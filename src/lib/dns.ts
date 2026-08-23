@@ -1,6 +1,6 @@
 import { company } from "@/lib/company";
 
-export const DOMAIN_STORAGE = "ne1-dns-v013";
+export const DOMAIN_STORAGE = "ne1-dns-v014";
 
 export type DnsRecord = {
   host: string;

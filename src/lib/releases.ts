@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.4",
+    date: "2026-08-23",
+    title: "가비아 DNS 설정 작업",
+    items: [
+      "가비아 DNS 관리툴 순서에 맞춰 레코드 추가 작업창",
+      "www CNAME(ne1-tech.co.kr.) 추가, MX/SPF/NS는 유지",
+      "A 레코드는 호스팅 IP가 정해진 뒤 입력",
+    ],
+  },
+  {
     version: "0.1.3",
     date: "2026-08-23",
     title: "도메인과 DNS 정보",
