@@ -28,6 +28,15 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  if (pathname.startsWith("/admin/gabia") || pathname.startsWith("/admin/github")) {
+    return (
+      <>
+        <AdminBar />
+        {children}
+      </>
+    );
+  }
+
   return (
     <>
       <AdminBar />
