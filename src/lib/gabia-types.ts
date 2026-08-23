@@ -19,4 +19,6 @@ export type GabiaPublicState = {
   emailMasked: string | null;
   lastAction: GabiaLastAction;
   hasForeignToken: boolean;
+  sendCount: number;
+  lastCheckedAt: string | null;
 };

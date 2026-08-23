@@ -28,6 +28,8 @@ function empty(): StoredState {
     emailMasked: null,
     lastAction: "idle",
     hasForeignToken: false,
+    sendCount: 0,
+    lastCheckedAt: null,
     cookies: {},
     token: null,
     captchaVcid: null,
@@ -49,6 +51,8 @@ function publicView(state: StoredState): GabiaPublicState {
     emailMasked: state.emailMasked,
     lastAction: state.lastAction,
     hasForeignToken: Boolean(state.foreignAuthToken),
+    sendCount: state.sendCount,
+    lastCheckedAt: state.lastCheckedAt,
   };
 }
 
@@ -431,10 +435,12 @@ export async function gabiaForeignSend(input: { userId: string; password: string
   state.userId = input.userId.trim();
   state.foreignChannel = input.channel;
   state.foreignAuthToken = token ?? state.foreignAuthToken;
+  state.sendCount += 1;
+  state.lastCheckedAt = new Date().toISOString();
   state.lastAction = input.channel === "sms" ? "sms_sent" : "email_sent";
   const dest = input.channel === "sms" ? state.phoneMasked : state.emailMasked;
   state.message = token
-    ? `${dest ?? (input.channel === "sms" ? "휴대전화" : "이메일")}로 인증번호를 보냈습니다. 받은 새 숫자를 입력하세요.`
+    ? `${dest ?? (input.channel === "sms" ? "휴대전화" : "이메일")}로 ${state.sendCount}번째 인증번호를 보냈습니다. 가장 마지막 문자만 유효합니다.`
     : "인증번호는 보냈지만 확인 토큰을 받지 못했습니다. 비밀번호를 확인하고 한 번 더 보내 주세요.";
   await save(state);
   return publicView(state);
@@ -471,7 +477,6 @@ export async function gabiaForeignVerify(input: {
     origin: "www",
     authKey,
     authToken: state.foreignAuthToken,
-    auth_token: state.foreignAuthToken,
   };
   const response = await gabiaFetch(
     state,
@@ -487,11 +492,12 @@ export async function gabiaForeignVerify(input: {
     },
   );
   const data = (await response.json().catch(() => ({}))) as GabiaAuthJson;
+  state.lastCheckedAt = new Date().toISOString();
   if (failedAuth(data, response)) {
     state.status = "foreign";
     state.lastAction = "verify_fail";
     state.message =
-      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 방금 문자로 온 숫자만 다시 넣거나, 안 맞으면 인증번호를 다시 받으세요.`;
+      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 가장 마지막 문자 숫자만 넣거나, 인증번호를 다시 받으세요.`;
     await save(state);
     return publicView(state);
   }

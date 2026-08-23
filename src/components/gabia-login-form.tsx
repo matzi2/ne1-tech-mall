@@ -1,10 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { GabiaPublicState } from "@/lib/gabia-types";
+
+function formatCheckedAt(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date);
+}
 
 function resultTone(state: GabiaPublicState) {
   if (state.status === "ready" || state.status === "applied" || state.lastAction === "dns_ok") {
@@ -28,7 +40,7 @@ function actionLabel(state: GabiaPublicState) {
     case "verify_ok":
       return "인증번호 확인됨";
     case "verify_fail":
-      return "인증번호 확인 실패";
+      return "인증번호 확인 실패 · DNS 미등록";
     case "dns_ok":
       return "DNS 등록 완료";
     case "dns_fail":
@@ -40,6 +52,19 @@ function actionLabel(state: GabiaPublicState) {
   }
 }
 
+function ResultBanner({ state }: { state: GabiaPublicState }) {
+  const checked = formatCheckedAt(state.lastCheckedAt);
+  return (
+    <div className={`rounded-lg border px-3 py-3 ${resultTone(state)}`}>
+      <p className="text-xs font-semibold tracking-wide uppercase">{actionLabel(state)}</p>
+      {checked ? <p className="mt-1 text-xs">마지막 확인 {checked}</p> : null}
+      <p className="mt-1 text-base font-semibold leading-6">{state.message || "진행 결과를 여기에 표시합니다."}</p>
+      {state.applied?.length ? <p className="mt-1 text-sm">등록됨: {state.applied.join(", ")}</p> : null}
+      {state.sendCount > 0 ? <p className="mt-1 text-xs">문자 발송 {state.sendCount}회 · 마지막 문자만 유효</p> : null}
+    </div>
+  );
+}
+
 export function GabiaLoginForm() {
   const [state, setState] = useState<GabiaPublicState | null>(null);
   const [userId, setUserId] = useState("");
@@ -47,10 +72,15 @@ export function GabiaLoginForm() {
   const [captchaValue, setCaptchaValue] = useState("");
   const [authKey, setAuthKey] = useState("");
   const [busy, setBusy] = useState(false);
+  const resultRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     void hydrate();
   }, []);
+
+  useEffect(() => {
+    if (state?.lastCheckedAt) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [state?.lastCheckedAt, state?.lastAction]);
 
   async function hydrate() {
     setBusy(true);
@@ -83,14 +113,7 @@ export function GabiaLoginForm() {
     });
     const next = (await response.json()) as GabiaPublicState;
     setState(next);
-    if (next.status === "foreign" && password) {
-      const sent = await fetch("/api/connect/gabia/foreign/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, password, channel: "sms" }),
-      });
-      setState((await sent.json()) as GabiaPublicState);
-    } else if (next.status !== "foreign") {
+    if (next.status !== "foreign") {
       setPassword("");
       setCaptchaValue("");
     }
@@ -119,10 +142,8 @@ export function GabiaLoginForm() {
     });
     const next = (await response.json()) as GabiaPublicState;
     setState(next);
-    if (next.status === "ready" || next.status === "applied") {
-      setPassword("");
-      setAuthKey("");
-    }
+    setAuthKey("");
+    if (next.status === "ready" || next.status === "applied") setPassword("");
     setBusy(false);
   }
 
@@ -143,10 +164,8 @@ export function GabiaLoginForm() {
         이 작업 서버는 한국 밖입니다. 아이디·보안 문자가 맞아도 가비아가 휴대전화/이메일 추가 인증을 요구할 수 있습니다.
       </p>
       {state ? (
-        <div className={`mt-3 rounded-lg border px-3 py-3 ${resultTone(state)}`}>
-          <p className="text-xs font-semibold tracking-wide uppercase">{actionLabel(state)}</p>
-          <p className="mt-1 text-base font-semibold leading-6">{state.message || "진행 결과를 여기에 표시합니다."}</p>
-          {state.applied?.length ? <p className="mt-1 text-sm">등록됨: {state.applied.join(", ")}</p> : null}
+        <div ref={resultRef} className="mt-3">
+          <ResultBanner state={state} />
         </div>
       ) : null}
 
@@ -209,12 +228,13 @@ export function GabiaLoginForm() {
               autoComplete="one-time-code"
               value={authKey}
               onChange={(event) => setAuthKey(event.target.value.replace(/\D/g, ""))}
-              placeholder="문자에 적힌 숫자"
+              placeholder="마지막 문자에 적힌 숫자"
             />
           </div>
+          <ResultBanner state={state} />
           <div className="flex flex-wrap gap-2">
             <Button type="submit" variant="navy" disabled={busy || !authKey || !password || !state.hasForeignToken}>
-              인증하고 DNS 등록
+              {busy ? "가비아에 확인 중…" : "인증하고 DNS 등록"}
             </Button>
             <Button type="button" variant="outline" disabled={busy} onClick={start}>
               처음부터
