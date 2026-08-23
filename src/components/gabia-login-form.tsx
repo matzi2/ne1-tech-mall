@@ -11,17 +11,31 @@ export function GabiaLoginForm() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [captchaValue, setCaptchaValue] = useState("");
+  const [authKey, setAuthKey] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    void start();
+    void hydrate();
   }, []);
+
+  async function hydrate() {
+    setBusy(true);
+    const current = (await (await fetch("/api/connect/gabia/status")).json()) as GabiaPublicState;
+    if (current.status === "foreign" || current.status === "ready" || current.status === "applied") {
+      setState(current);
+      if (current.userId) setUserId(current.userId);
+      setBusy(false);
+      return;
+    }
+    await start();
+  }
 
   async function start() {
     setBusy(true);
     const response = await fetch("/api/connect/gabia/init", { method: "POST" });
     setState((await response.json()) as GabiaPublicState);
     setCaptchaValue("");
+    setAuthKey("");
     setBusy(false);
   }
 
@@ -33,9 +47,37 @@ export function GabiaLoginForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, password, captchaValue }),
     });
+    const next = (await response.json()) as GabiaPublicState;
+    setState(next);
+    if (next.status !== "foreign") {
+      setPassword("");
+      setCaptchaValue("");
+    }
+    setBusy(false);
+  }
+
+  async function sendForeign(channel: "sms" | "ems") {
+    setBusy(true);
+    const response = await fetch("/api/connect/gabia/foreign/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, password, channel }),
+    });
     setState((await response.json()) as GabiaPublicState);
-    setPassword("");
-    setCaptchaValue("");
+    setBusy(false);
+  }
+
+  async function verifyForeign(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    const response = await fetch("/api/connect/gabia/foreign/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, password, authKey, captchaValue }),
+    });
+    const next = (await response.json()) as GabiaPublicState;
+    setState(next);
+    if (next.status === "ready" || next.status === "applied") setPassword("");
     setBusy(false);
   }
 
@@ -47,13 +89,13 @@ export function GabiaLoginForm() {
   }
 
   const ok = state?.status === "ready" || state?.status === "applied";
+  const foreign = state?.status === "foreign";
 
   return (
     <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
       <p className="text-sm font-semibold text-navy">가비아 로그인 · DNS 등록</p>
       <p className="mt-1 text-sm leading-6 text-slate-700">
-        아이디·비밀번호·보안 문자는 이 창에만 넣고, 서버에 비밀번호를 저장하지 않습니다. 로그인되면 www CNAME을
-        가비아에 등록합니다.
+        이 작업 서버는 한국 밖입니다. 아이디·보안 문자가 맞아도 가비아가 휴대전화/이메일 추가 인증을 요구할 수 있습니다.
       </p>
       {state?.message ? (
         <p className={`mt-2 text-sm font-medium ${ok ? "text-emerald-800" : "text-red-700"}`}>{state.message}</p>
@@ -71,6 +113,55 @@ export function GabiaLoginForm() {
             다시 로그인
           </Button>
         </div>
+      ) : foreign ? (
+        <form className="mt-4 space-y-3" onSubmit={verifyForeign}>
+          <p className="text-sm font-semibold text-navy">해외 IP 추가 인증</p>
+          <div>
+            <Label htmlFor="gabia-id-f">가비아 아이디</Label>
+            <Input id="gabia-id-f" className="mt-1" value={userId} onChange={(event) => setUserId(event.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="gabia-pw-f">비밀번호</Label>
+            <Input
+              id="gabia-pw-f"
+              className="mt-1"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="navy" disabled={busy || !password} onClick={() => sendForeign("sms")}>
+              휴대전화로 인증번호
+            </Button>
+            <Button type="button" variant="outline" disabled={busy || !password} onClick={() => sendForeign("ems")}>
+              이메일로 인증번호
+            </Button>
+          </div>
+          {state.foreignChannel ? (
+            <p className="text-xs text-slate-600">
+              {state.foreignChannel === "sms" ? "휴대전화" : "이메일"}로 보냈습니다.
+            </p>
+          ) : null}
+          <div>
+            <Label htmlFor="gabia-auth">인증번호</Label>
+            <Input
+              id="gabia-auth"
+              className="mt-1"
+              value={authKey}
+              onChange={(event) => setAuthKey(event.target.value)}
+              placeholder="받은 숫자"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" variant="navy" disabled={busy || !authKey || !password}>
+              인증하고 DNS 등록
+            </Button>
+            <Button type="button" variant="outline" disabled={busy} onClick={start}>
+              처음부터
+            </Button>
+          </div>
+        </form>
       ) : (
         <form className="mt-4 space-y-3" onSubmit={login}>
           <div>
