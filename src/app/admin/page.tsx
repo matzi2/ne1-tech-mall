@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { domainPlan } from "@/lib/dns";
+import { GitHubDesk } from "@/components/github-desk";
 import type { GitHubConnectState } from "@/lib/github-types";
 
 type DomainStatus = {
@@ -92,6 +93,9 @@ export default function AdminOpsPage() {
           ) : (
             <p className="mt-1 text-xs text-slate-500">{github?.login ?? "저장소 대기"}</p>
           )}
+          <Link href="/admin/github" className="mt-2 inline-block text-xs font-semibold text-[#0046CA] underline">
+            GitHub 로그인 창
+          </Link>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">도메인</p>
@@ -100,6 +104,19 @@ export default function AdminOpsPage() {
           <p className="mt-1 text-xs text-slate-500">공식 도메인 상태만 표시합니다.</p>
         </article>
       </div>
+
+      <section className="mt-8">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold text-navy">GitHub 로그인</h2>
+            <p className="text-sm text-slate-500">관리자 계정에서만 이 창이 열립니다. 쇼핑몰 화면에는 없습니다.</p>
+          </div>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/admin/github">창만 크게 보기</Link>
+          </Button>
+        </div>
+        <GitHubDesk />
+      </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">

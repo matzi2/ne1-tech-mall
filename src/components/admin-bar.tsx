@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin", label: "운영화면" },
+  { href: "/admin/github", label: "GitHub" },
   { href: "/admin/products/new", label: "상품등록" },
   { href: "/products", label: "쇼핑몰" },
   { href: "/history", label: "히스토리" },
