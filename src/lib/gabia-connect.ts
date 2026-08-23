@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { company } from "@/lib/company";
+import { HOSTING_WAN_IPV4 } from "@/lib/hosting";
 import type { GabiaPublicState } from "@/lib/gabia-types";
 
 export type { GabiaPublicState } from "@/lib/gabia-types";
@@ -526,11 +527,42 @@ function phpArray(records: Record<string, string>[], prefix: string) {
   return parts.join("&");
 }
 
-export async function gabiaApply() {
+function isApexHost(host?: string) {
+  const value = (host ?? "").replace(/\.$/, "").toLowerCase();
+  return value === "" || value === "@" || value === company.apex;
+}
+
+function newGabiaRecord(type: string, host: string, data: string, extra: Record<string, string> = {}) {
+  return {
+    seqno: "-1",
+    status: "add",
+    type,
+    host,
+    data,
+    ttl: "1800",
+    services_idx: extra.services_idx ?? "",
+    service: "",
+    protocol: "",
+    priority: extra.priority ?? "",
+    weight: "",
+    port: "",
+    target: "",
+  };
+}
+
+export async function gabiaApply(input: { ipv4?: string } = {}) {
   const state = await load();
   if (state.status !== "ready" && state.status !== "applied") {
     state.lastAction = "dns_fail";
-    state.message = "먼저 가비아에 로그인하세요.";
+    state.message = "먼저 가비아에 로그인하세요. 해외 IP면 인증번호를 확인한 뒤 A 레코드를 등록합니다.";
+    await save(state);
+    return publicView(state);
+  }
+
+  const ipv4 = (input.ipv4 || HOSTING_WAN_IPV4).trim();
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) {
+    state.lastAction = "dns_fail";
+    state.message = "A 레코드에 넣을 공인 IPv4가 없습니다.";
     await save(state);
     return publicView(state);
   }
@@ -549,40 +581,46 @@ export async function gabiaApply() {
   }
 
   const current = (await list.json().catch(() => ({}))) as {
-    record?: { type?: string; host?: string; data?: string }[];
+    record?: { type?: string; host?: string; data?: string; seqno?: string | number }[];
     message?: string;
   };
   const records = current.record ?? [];
   const hasWww = records.some(
     (row) => row.type === "CNAME" && (row.host === "www" || row.host === "www.ne1-tech.co.kr"),
   );
+  const apexA = records.find((row) => row.type === "A" && isApexHost(row.host));
+  const done = [...state.applied];
+  const add: ReturnType<typeof newGabiaRecord>[] = [];
 
-  if (hasWww) {
+  if (!hasWww) {
+    add.push(newGabiaRecord("CNAME", "www", `${company.dns.wwwTarget}.`, { services_idx: "19" }));
+  } else {
+    done.push("www CNAME");
+  }
+
+  if (!apexA) {
+    add.push(newGabiaRecord("A", "@", ipv4));
+  } else if ((apexA.data ?? "").trim() === ipv4) {
+    done.push(`A @ ${ipv4}`);
+  } else if (apexA.seqno != null) {
+    add.push({
+      ...newGabiaRecord("A", "@", ipv4),
+      seqno: String(apexA.seqno),
+      status: "mod",
+    });
+  } else {
+    add.push(newGabiaRecord("A", "@", ipv4));
+  }
+
+  if (!add.length) {
     state.status = "applied";
     state.lastAction = "dns_ok";
-    state.applied = Array.from(new Set([...state.applied, "www CNAME"]));
-    state.message = "www CNAME 은 이미 가비아에 있습니다.";
+    state.applied = Array.from(new Set(done));
+    state.message = `가비아에 필요한 값이 있습니다. A(@) ${ipv4} · www CNAME. MX·SPF·NS는 그대로 둡니다.`;
     await save(state);
     return publicView(state);
   }
 
-  const add = [
-    {
-      seqno: "-1",
-      status: "add",
-      type: "CNAME",
-      host: "www",
-      data: `${company.dns.wwwTarget}.`,
-      ttl: "1800",
-      services_idx: "19",
-      service: "",
-      protocol: "",
-      priority: "",
-      weight: "",
-      port: "",
-      target: "",
-    },
-  ];
   const body = `domain=${encodeURIComponent(domain)}&${phpArray(add, "data")}`;
   const saveRes = await gabiaFetch(state, "https://dns.gabia.com/dns/ajax/dns", {
     method: "POST",
@@ -603,10 +641,13 @@ export async function gabiaApply() {
     return publicView(state);
   }
 
+  if (add.some((row) => row.type === "A")) done.push(`A @ ${ipv4}`);
+  if (add.some((row) => row.type === "CNAME")) done.push("www CNAME");
+
   state.status = "applied";
   state.lastAction = "dns_ok";
-  state.applied = Array.from(new Set([...state.applied, "www CNAME"]));
-  state.message = "가비아에 www CNAME(ne1-tech.co.kr.) 을 등록했습니다. 반영까지 시간이 걸릴 수 있습니다.";
+  state.applied = Array.from(new Set(done));
+  state.message = `가비아에 A(@) ${ipv4} 를 등록했습니다. MX·SPF·NS·www는 유지합니다. 반영까지 시간이 걸릴 수 있습니다.`;
   await save(state);
   return publicView(state);
 }

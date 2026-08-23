@@ -1,4 +1,5 @@
 import { company } from "@/lib/company";
+import { HOSTING_WAN_IPV4 } from "@/lib/hosting";
 
 export const DOMAIN_STORAGE = "ne1-dns-v014";
 
@@ -22,7 +23,7 @@ export type DnsSettings = {
 export const defaultDnsSettings: DnsSettings = {
   registrar: company.dns.registrar,
   nameservers: company.dns.nameservers,
-  ipv4: "",
+  ipv4: HOSTING_WAN_IPV4,
   wwwTarget: company.dns.wwwTarget,
   mx: company.dns.mx,
 };

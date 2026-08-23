@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { HOSTING_NOTE, type HostingState } from "@/lib/hosting";
+import { HOSTING_NOTE, HOSTING_WAN_IPV4, type HostingState } from "@/lib/hosting";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,8 @@ export async function GET() {
     extra = {};
   }
   return Response.json({
-    ipv4: extra.ipv4 ?? null,
+    ipv4: HOSTING_WAN_IPV4,
     tunnelUrl: extra.tunnelUrl ?? null,
-    message: extra.message || HOSTING_NOTE,
+    message: `${HOSTING_NOTE} 가비아 A(@) 값은 ${HOSTING_WAN_IPV4} (matzi57.synology.me) 입니다. 터널 주소는 A에 넣지 마세요.`,
   } satisfies HostingState);
 }

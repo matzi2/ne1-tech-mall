@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { CONNECTIONS_STORAGE, type LocalConnectionState } from "@/lib/connections";
 import { company } from "@/lib/company";
 import type { HostingState } from "@/lib/hosting";
+import { HOSTING_WAN_IPV4 } from "@/lib/hosting";
 import { DOMAIN_STORAGE, defaultDnsSettings, domainPlan, type DnsSettings } from "@/lib/dns";
 import {
   GABIA_CHECKLIST_STORAGE,
@@ -49,7 +50,9 @@ export default function DomainConnectPage() {
   useEffect(() => {
     const stored = localStorage.getItem(DOMAIN_STORAGE);
     if (stored) {
-      setSettings({ ...defaultDnsSettings, ...(JSON.parse(stored) as DnsSettings) });
+      const next = { ...defaultDnsSettings, ...(JSON.parse(stored) as DnsSettings) };
+      if (!next.ipv4.trim()) next.ipv4 = HOSTING_WAN_IPV4;
+      setSettings(next);
     }
     const storedChecks = localStorage.getItem(GABIA_CHECKLIST_STORAGE);
     if (storedChecks) {
@@ -269,10 +272,10 @@ export default function DomainConnectPage() {
             공개 DNS에 <code>www.ne1-tech.co.kr → ne1-tech.co.kr</code> 이 있습니다. MX·TXT·NS는 그대로 두면 됩니다.
           </p>
           <p>
-            지금 추가: 호스트 <code>_dmarc</code> · 타입 <code>TXT</code> · 값 <code>v=DMARC1; p=none;</code>
+            지금 추가: 호스트 <code>@</code> · 타입 <code>A</code> · 값 <code>{settings.ipv4 || "공유기 WAN IPv4"}</code>
           </p>
           <p>
-            A 레코드(호스트 @)는 회사 공인 IPv4(공유기 WAN)입니다. 시놀로지 내부 IP나 이 작업 서버 IP는 넣지 마세요.
+            A 레코드는 회사 공인 IPv4(공유기 WAN)입니다. 시놀로지 내부 IP나 이 작업 서버 IP는 넣지 마세요.
           </p>
         </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HOSTING_WAN_IPV4 } from "@/lib/hosting";
 import type { GabiaPublicState } from "@/lib/gabia-types";
 
 function formatCheckedAt(value: string | null) {
@@ -149,7 +150,11 @@ export function GabiaLoginForm() {
 
   async function apply() {
     setBusy(true);
-    const response = await fetch("/api/connect/gabia/apply", { method: "POST" });
+    const response = await fetch("/api/connect/gabia/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ipv4: HOSTING_WAN_IPV4 }),
+    });
     setState((await response.json()) as GabiaPublicState);
     setBusy(false);
   }
@@ -172,7 +177,7 @@ export function GabiaLoginForm() {
       {ok ? (
         <div className="mt-3 flex flex-wrap gap-2">
           <Button type="button" variant="navy" disabled={busy} onClick={apply}>
-            DNS 다시 등록
+            A 레코드 등록 · {HOSTING_WAN_IPV4}
           </Button>
           <Button type="button" variant="outline" disabled={busy} onClick={start}>
             다시 로그인
