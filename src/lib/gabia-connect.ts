@@ -116,6 +116,10 @@ function omitEmpty(payload: Record<string, unknown>) {
   );
 }
 
+function normalizeAuthKey(value: string) {
+  return value.replace(/\D/g, "");
+}
+
 export async function gabiaStatus() {
   const state = await load();
   if (state.status === "foreign" && state.userId && !state.phoneMasked) {
@@ -453,12 +457,21 @@ export async function gabiaForeignVerify(input: {
   }
 
   const channel = state.foreignChannel ?? "sms";
+  const authKey = normalizeAuthKey(input.authKey);
+  if (authKey.length < 4) {
+    state.status = "foreign";
+    state.lastAction = "verify_fail";
+    state.message = "인증번호는 문자로 받은 숫자만 넣어 주세요. DNS는 아직 등록되지 않았습니다.";
+    await save(state);
+    return publicView(state);
+  }
   const body = {
     userId: input.userId.trim(),
     userPwd: input.password,
     origin: "www",
-    authKey: input.authKey.trim(),
+    authKey,
     authToken: state.foreignAuthToken,
+    auth_token: state.foreignAuthToken,
   };
   const response = await gabiaFetch(
     state,
@@ -477,7 +490,8 @@ export async function gabiaForeignVerify(input: {
   if (failedAuth(data, response)) {
     state.status = "foreign";
     state.lastAction = "verify_fail";
-    state.message = authMessage(data, "foreign") || "인증번호가 맞지 않습니다. 다시 받아 입력해 주세요.";
+    state.message =
+      `${authMessage(data, "foreign") || "인증번호가 맞지 않습니다."} DNS는 아직 등록되지 않았습니다. 방금 문자로 온 숫자만 다시 넣거나, 안 맞으면 인증번호를 다시 받으세요.`;
     await save(state);
     return publicView(state);
   }

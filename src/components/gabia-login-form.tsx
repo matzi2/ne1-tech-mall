@@ -166,9 +166,11 @@ export function GabiaLoginForm() {
             가비아 등록 휴대전화 {state.phoneMasked ?? "(확인 중)"} · 메일 {state.emailMasked ?? "(확인 중)"}
           </p>
           <p className="text-sm leading-6 text-slate-700">
-            {state.hasForeignToken
-              ? "인증번호가 준비됐습니다. 방금 받은 숫자와 비밀번호를 넣고 확인하세요."
-              : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
+            {state.lastAction === "verify_fail"
+              ? "가비아가 방금 숫자를 거절했습니다. DNS는 아직 안 올라갔습니다. 문자 속 숫자만 다시 넣거나, 인증번호를 다시 받으세요."
+              : state.hasForeignToken
+                ? "인증번호가 준비됐습니다. 문자에 적힌 숫자만 넣고 확인하세요."
+                : "이전에 받은 인증번호는 쓸 수 없습니다. 비밀번호를 넣고 인증번호를 다시 받으세요."}
           </p>
           <div>
             <Label htmlFor="gabia-id-f">가비아 아이디</Label>
@@ -203,9 +205,11 @@ export function GabiaLoginForm() {
             <Input
               id="gabia-auth"
               className="mt-1"
+              inputMode="numeric"
+              autoComplete="one-time-code"
               value={authKey}
-              onChange={(event) => setAuthKey(event.target.value)}
-              placeholder="새로 받은 숫자"
+              onChange={(event) => setAuthKey(event.target.value.replace(/\D/g, ""))}
+              placeholder="문자에 적힌 숫자"
             />
           </div>
           <div className="flex flex-wrap gap-2">
