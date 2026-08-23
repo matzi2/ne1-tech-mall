@@ -112,7 +112,7 @@ export default function AdminOpsPage() {
       <section className="mt-8 grid gap-4 sm:grid-cols-2">
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-navy">GitHub 계정 로그인 창</h2>
-          <p className="mt-1 text-sm text-slate-500">아이디와 토큰으로 로그인합니다. 이 화면에는 토큰 창을 넣지 않습니다.</p>
+          <p className="mt-1 text-sm text-slate-500">아이디를 넣고 로그인합니다. 이 화면에는 토큰 창을 넣지 않습니다.</p>
           <Button asChild size="sm" className="mt-4">
             <Link href="/admin/github">로그인 창 열기</Link>
           </Button>
