@@ -10,7 +10,6 @@ import { formatPrice } from "@/lib/format";
 import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { daysUntil, formatMemberDate } from "@/lib/membership";
 import { domainPlan } from "@/lib/dns";
-import { GitHubWindows } from "@/components/github-windows";
 import type { GitHubConnectState } from "@/lib/github-types";
 
 type DomainStatus = {
@@ -93,9 +92,14 @@ export default function AdminOpsPage() {
           ) : (
             <p className="mt-1 text-xs text-slate-500">{github?.login ?? "저장소 대기"}</p>
           )}
-          <Link href="/admin/github" className="mt-2 inline-block text-xs font-semibold text-[#0046CA] underline">
-            GitHub 로그인 창
-          </Link>
+          <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+            <Link href="/admin/github" className="text-[#0046CA] underline">
+              계정 로그인 창
+            </Link>
+            <Link href="/admin/github/token" className="text-[#0046CA] underline">
+              토큰 창
+            </Link>
+          </div>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">도메인</p>
@@ -105,17 +109,21 @@ export default function AdminOpsPage() {
         </article>
       </div>
 
-      <section className="mt-8">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h2 className="text-lg font-semibold text-navy">GitHub 로그인 · 토큰 정보</h2>
-            <p className="text-sm text-slate-500">로그인 창과 토큰 정보 창을 따로 둡니다. 쇼핑몰 화면에는 없습니다.</p>
-          </div>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/admin/github">창만 크게 보기</Link>
+      <section className="mt-8 grid gap-4 sm:grid-cols-2">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-navy">GitHub 계정 로그인 창</h2>
+          <p className="mt-1 text-sm text-slate-500">아이디와 토큰으로 로그인합니다. 이 화면에는 토큰 창을 넣지 않습니다.</p>
+          <Button asChild size="sm" className="mt-4">
+            <Link href="/admin/github">로그인 창 열기</Link>
           </Button>
-        </div>
-        <GitHubWindows />
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-navy">GitHub 토큰 창</h2>
+          <p className="mt-1 text-sm text-slate-500">장치 코드와 Personal Access Token만 다룹니다. 로그인 창과 분리합니다.</p>
+          <Button asChild size="sm" variant="outline" className="mt-4">
+            <Link href="/admin/github/token">토큰 창 열기</Link>
+          </Button>
+        </article>
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">

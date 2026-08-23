@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,9 +28,11 @@ const idle: GitHubConnectState = {
 export function GitHubConnectPanel({
   autoStart = true,
   username = "",
+  refreshKey = 0,
 }: {
   autoStart?: boolean;
   username?: string;
+  refreshKey?: number;
 }) {
   const [state, setState] = useState<GitHubConnectState>(idle);
   const [loaded, setLoaded] = useState(false);
@@ -83,7 +86,7 @@ export function GitHubConnectPanel({
     return () => {
       cancelled = true;
     };
-  }, [apply]);
+  }, [apply, refreshKey]);
 
   useEffect(() => {
     if (!autoStart || !loaded || startedRef.current) return;
@@ -135,9 +138,9 @@ export function GitHubConnectPanel({
   return (
     <div id="github-token-desk" className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-4 py-3 md:px-6">
-        <p className="text-sm font-semibold text-[#000092]">관리자 · GitHub 토큰 정보 창</p>
+        <p className="text-sm font-semibold text-[#000092]">관리자 · GitHub 토큰 창</p>
         <p className="mt-1 text-xs leading-5 text-slate-500">
-          장치 코드와 Personal Access Token은 이 창에서만 다룹니다. 로그인 아이디는 위 창에 있습니다.
+          이 창은 장치 코드와 Personal Access Token만 다룹니다. 계정 로그인은 로그인 창에서 합니다.
         </p>
       </div>
 
@@ -232,7 +235,7 @@ export function GitHubConnectPanel({
         <p className="mt-1 text-sm text-slate-600">
           장치 코드가 막히면 GitHub에서 <code>repo</code> 권한 토큰을 만들어 이 칸에만 붙여 넣으세요.
           토큰은 이 작업 세션에만 두고 git에는 저장하지 않습니다.
-          {username.trim() ? ` 로그인 창 아이디: ${username.trim()}` : " 위 로그인 창에 아이디를 먼저 넣으면 토큰 계정과 맞는지 확인합니다."}
+          계정 아이디는 로그인 창에서 넣습니다.
         </p>
         <form className="mt-4 space-y-3" onSubmit={submitToken}>
           <textarea
@@ -241,9 +244,14 @@ export function GitHubConnectPanel({
             value={token}
             onChange={(event) => setToken(event.target.value)}
           />
-          <Button type="submit" variant="navy" disabled={busy || !token.trim()}>
-            토큰으로 저장소 연결
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" variant="navy" disabled={busy || !token.trim()}>
+              토큰으로 저장소 연결
+            </Button>
+            <Button type="button" variant="outline" asChild>
+              <Link href="/admin/github">로그인 창 열기</Link>
+            </Button>
+          </div>
         </form>
       </section>
       </div>

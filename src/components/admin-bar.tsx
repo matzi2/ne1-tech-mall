@@ -7,13 +7,13 @@ import { isAdmin } from "@/lib/company";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/admin", label: "운영화면" },
-  { href: "/admin/github", label: "GitHub" },
-  { href: "/admin/github#github-token-desk", label: "토큰" },
-  { href: "/admin/gabia", label: "가비아" },
-  { href: "/admin/products/new", label: "상품등록" },
-  { href: "/products", label: "쇼핑몰" },
-  { href: "/history", label: "히스토리" },
+  { href: "/admin", label: "운영화면", match: "exact" as const },
+  { href: "/admin/github", label: "GitHub", match: "exact" as const },
+  { href: "/admin/github/token", label: "토큰", match: "exact" as const },
+  { href: "/admin/gabia", label: "가비아", match: "prefix" as const },
+  { href: "/admin/products/new", label: "상품등록", match: "prefix" as const },
+  { href: "/products", label: "쇼핑몰", match: "prefix" as const },
+  { href: "/history", label: "히스토리", match: "prefix" as const },
 ];
 
 export function AdminBar() {
@@ -29,20 +29,18 @@ export function AdminBar() {
           운영 · {user?.name} · {user?.email}
         </p>
         <nav className="flex flex-wrap items-center gap-3 text-sm font-medium">
-          {links.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "underline-offset-4 hover:underline",
-                pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-                  ? "underline"
-                  : "",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {links.map((item) => {
+            const active = item.match === "exact" ? pathname === item.href : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn("underline-offset-4 hover:underline", active ? "underline" : "")}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </div>
