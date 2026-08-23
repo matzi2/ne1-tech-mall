@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.20",
+    date: "2026-08-23",
+    title: "NAS에 쇼핑몰 소스 올리기",
+    items: [
+      "가비아 A는 등록됨. 공유기 80·443은 밖에서 열림",
+      "WebDAV /docker/ne1-tech-mall 에 소스와 부트스트랩을 올림",
+    ],
+  },
+  {
     version: "0.2.19",
     date: "2026-08-23",
     title: "관리자 계정에서 NAS 창 표시",

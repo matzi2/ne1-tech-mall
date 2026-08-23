@@ -3,7 +3,17 @@
 # 인터넷에 SSH(22)를 상시로 열지는 마세요.
 set -eu
 DIR="${NAS_APP_DIR:-/volume1/docker/ne1-tech-mall}"
+mkdir -p "$DIR"
 cd "$DIR"
+
+if [ -f ne1-tech-mall.tgz ]; then
+  tar -xzf ne1-tech-mall.tgz
+fi
+
+if [ ! -f docker-compose.yml ]; then
+  echo "docker-compose.yml 이 없습니다. WebDAV /docker/ne1-tech-mall 업로드를 확인하세요."
+  exit 1
+fi
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Container Manager(Docker)가 없습니다. 패키지 센터에서 설치한 뒤 이 폴더로 프로젝트를 만드세요."
@@ -13,3 +23,4 @@ fi
 docker compose up -d --build
 docker compose ps
 echo "다음: DSM 역방향 프록시 ne1-tech.co.kr / www → 127.0.0.1:43177, Let's Encrypt 인증서."
+
