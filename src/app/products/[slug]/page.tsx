@@ -10,13 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatFileSize, formatPrice } from "@/lib/format";
-import { getCategoryLabel } from "@/lib/products";
+import { useCompare } from "@/components/compare-provider";
+import { getCategoryGroup, getCategoryLabel } from "@/lib/products";
 import { relatedProducts } from "@/lib/shop";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
   const { catalog, getProduct, addToCart, ready } = useApp();
+  const compare = useCompare();
   const [qty, setQty] = useState(1);
   const product = getProduct(slug);
   const related = product ? relatedProducts(catalog, product.slug, product.category) : [];
@@ -45,7 +47,12 @@ export default function ProductDetailPage() {
         </div>
       </div>
       <div>
-        <Badge>{getCategoryLabel(product.category)}</Badge>
+        <div className="flex flex-wrap gap-2">
+          {getCategoryGroup(product.category) ? (
+            <Badge variant="muted">{getCategoryGroup(product.category)?.label}</Badge>
+          ) : null}
+          <Badge>{getCategoryLabel(product.category)}</Badge>
+        </div>
         <h1 className="mt-3 text-3xl font-bold text-navy">{product.name}</h1>
         <p className="mt-1 text-sm text-slate-500">{product.sku} · {product.leadTime}</p>
         <p className="mt-4 text-3xl font-bold text-navy">{formatPrice(product.price)}</p>
@@ -77,6 +84,9 @@ export default function ProductDetailPage() {
           </Button>
           <Button asChild variant="outline">
             <Link href="/inquiry">견적 문의</Link>
+          </Button>
+          <Button type="button" variant={compare.has(product.slug) ? "outline" : "amber"} onClick={() => compare.toggle(product.slug)}>
+            {compare.has(product.slug) ? "비교에서 빼기" : "스펙 비교"}
           </Button>
         </div>
         {product.specs.length > 0 ? (

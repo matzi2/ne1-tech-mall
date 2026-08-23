@@ -18,7 +18,7 @@ export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
   legalName: "주식회사 엔이원텍",
-  version: "0.2.3",
+  version: "0.2.4",
   releasedAt: "2026-08-23",
   domain: "NE1-TECH.CO.KR",
   siteUrl: "https://ne1-tech.co.kr",
@@ -33,13 +33,13 @@ export const company = {
     spf: "v=spf1 include:_spf.daum.net ~all",
     note: "공식 주소는 ne1-tech.co.kr 입니다. 메일은 sales@ / support@ 로 받습니다.",
   },
-  tagline: "산업용 전자부품, 품목별로 바로 찾습니다.",
+  tagline: "전자부품, 품번으로 찾고 사양으로 비교합니다.",
   description:
-    "엔이원텍(NE1-TECH)은 배선용차단기, 누전차단기, 전자접촉기, 전원장치, 단자대, 서지보호기 등 현장 유지보수용 전자부품을 공급합니다. 인천 청라에서 재고·주문 납품을 대응합니다.",
+    "엔이원텍(NE1-TECH)은 반도체, 센서, 수동소자, 전원, 커넥터, 스위치/전기부품, 제어기기 등 디바이스마트·IC뱅큐와 같은 전자부품을 취급합니다. 인천 청라에서 재고·주문 납품을 대응합니다.",
   founded: "2020.09.16",
   ceo: "김태극",
-  industry: "산업용 전자부품 유통·공급",
-  business: "배선용차단기 · 누전차단기 · 전자접촉기 · 전원장치 · 단자대 · 서지보호기",
+  industry: "전자부품 유통·공급",
+  business: "반도체 · 센서 · 수동소자 · 전원/파워 · 커넥터/단자 · 스위치/전기부품 · 제어/모터",
   address:
     "인천광역시 서구 파랑로 495, 2동 910호 (청라동, 에이스하이테크시티청라)",
   postalCode: "22770",
@@ -86,20 +86,20 @@ export const companyHistory = [
 
 export const capabilities = [
   {
-    title: "배선용·누전차단기",
-    body: "MCCB, ELCB 등 인입·분기 보호 소자를 정격별로 공급합니다.",
+    title: "반도체 · 센서 · 수동소자",
+    body: "IC, 트랜지스터, 온습도센서, 저항·콘덴서 등 기판용 소자를 품번으로 찾습니다.",
   },
   {
-    title: "전자접촉기·릴레이",
-    body: "모터 기동용 접촉기와 제어 신호용 보조릴레이를 재고로 대응합니다.",
+    title: "전원 · 커넥터 · 표시",
+    body: "SMPS, 배터리 홀더, 커넥터, PCB, LED/LCD를 시제품과 함체 작업에 맞춰 냅니다.",
   },
   {
-    title: "전원·서지 보호",
-    body: "DIN 레일 SMPS와 24V SPD로 제어전원과 신호선을 안정적으로 구성합니다.",
+    title: "스위치 · 전기부품",
+    body: "택트스위치부터 MCCB, ELCB, 퓨즈, SPD까지 보호·개폐 부품을 같이 취급합니다.",
   },
   {
-    title: "단자·퓨즈",
-    body: "제어배선 단자대와 퓨즈홀더 등 함체 내부 소모품을 소량부터 납품합니다.",
+    title: "제어 · 공구 · 계측",
+    body: "접촉기, 릴레이, 모터와 납땜·멀티미터 등 현장 공구를 함께 공급합니다.",
   },
 ] as const;
 

@@ -1,7 +1,7 @@
 services:
   mall:
     build: .
-    image: ne1-tech-mall:0.2.3
+    image: ne1-tech-mall:0.2.4
     container_name: ne1-tech-mall
     restart: unless-stopped
     ports:

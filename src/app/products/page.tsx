@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/product-card";
 import { SiteSearch } from "@/components/site-search";
 import { useApp } from "@/components/app-providers";
 import { filterCatalog } from "@/lib/catalog";
-import { categories, type ProductCategory } from "@/lib/products";
+import { categoryGroups, getCategoryGroup, matchTaxonomy, type CategoryGroupId, type ProductCategory } from "@/lib/products";
 import { shopSorts, sortCatalog, type ShopSort } from "@/lib/shop";
 import { Suspense } from "react";
 
@@ -16,16 +16,23 @@ function ProductsBody() {
   const { catalog, ready } = useApp();
   const q = params.get("q") ?? "";
   const category = (params.get("category") as ProductCategory | "all") || "all";
+  const group = (params.get("group") as CategoryGroupId | "all") || "all";
   const sort = (params.get("sort") as ShopSort) || "featured";
   const results = useMemo(() => {
-    const filtered = filterCatalog(catalog, q, category === "all" || !category ? "all" : category);
+    const filtered = filterCatalog(catalog, q).filter((item) => matchTaxonomy(item.category, group, category));
     return sortCatalog(filtered, shopSorts.some((item) => item.id === sort) ? sort : "featured");
-  }, [catalog, category, q, sort]);
+  }, [catalog, category, group, q, sort]);
 
   function setCategory(next: string) {
     const sp = new URLSearchParams(params.toString());
-    if (next === "all") sp.delete("category");
-    else sp.set("category", next);
+    if (next === "all") {
+      sp.delete("category");
+      sp.delete("group");
+    } else {
+      sp.set("category", next);
+      const parent = getCategoryGroup(next as ProductCategory);
+      if (parent) sp.set("group", parent.id);
+    }
     router.push(`/products?${sp.toString()}`);
   }
 
@@ -46,15 +53,29 @@ function ProductsBody() {
         <SiteSearch initialQuery={q} />
       </div>
       <div className="mt-5 flex flex-wrap gap-2">
-        {categories.map((item) => (
+        <button
+          type="button"
+          onClick={() => setCategory("all")}
+          className={`rounded-full border px-3 py-1.5 text-sm ${
+            group === "all" && (category === "all" || !category)
+              ? "border-navy bg-navy text-white"
+              : "border-slate-300 bg-white text-slate-700"
+          }`}
+        >
+          전체
+        </button>
+        {categoryGroups.map((item) => (
           <button
             key={item.id}
             type="button"
-            onClick={() => setCategory(item.id)}
+            onClick={() => {
+              const sp = new URLSearchParams(params.toString());
+              sp.delete("category");
+              sp.set("group", item.id);
+              router.push(`/products?${sp.toString()}`);
+            }}
             className={`rounded-full border px-3 py-1.5 text-sm ${
-              (item.id === "all" && (!category || category === "all")) || item.id === category
-                ? "border-navy bg-navy text-white"
-                : "border-slate-300 bg-white text-slate-700"
+              group === item.id ? "border-navy bg-navy text-white" : "border-slate-300 bg-white text-slate-700"
             }`}
           >
             {item.label}

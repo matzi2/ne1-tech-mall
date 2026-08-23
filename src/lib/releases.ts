@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.4",
+    date: "2026-08-23",
+    title: "부품 구분과 스펙서치",
+    items: [
+      "대분류·중분류를 디바이스마트·IC뱅큐와 같이 구성",
+      "품번 검색 후 사양을 표로 비교",
+    ],
+  },
+  {
     version: "0.2.3",
     date: "2026-08-23",
     title: "관리자 화면은 관리자 메일만",

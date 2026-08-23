@@ -4,14 +4,29 @@ import type { CatalogProduct } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 const tones: Record<string, string> = {
+  ic: "from-zinc-800 to-sky-600",
+  discrete: "from-slate-800 to-indigo-600",
+  sensor: "from-teal-800 to-emerald-500",
+  passive: "from-stone-700 to-amber-600",
+  mcu: "from-blue-900 to-sky-500",
+  led: "from-red-800 to-rose-500",
+  lcd: "from-cyan-900 to-sky-500",
   breaker: "from-slate-800 to-sky-700",
   elcb: "from-sky-800 to-cyan-600",
   contactor: "from-indigo-800 to-blue-600",
   power: "from-emerald-800 to-teal-600",
+  battery: "from-lime-800 to-green-500",
+  connector: "from-neutral-700 to-orange-500",
   terminal: "from-slate-700 to-slate-500",
+  pcb: "from-green-900 to-lime-600",
+  switch: "from-orange-800 to-amber-500",
   surge: "from-amber-700 to-orange-500",
   relay: "from-violet-800 to-purple-600",
   fuse: "from-rose-800 to-red-600",
+  motor: "from-blue-800 to-indigo-500",
+  cable: "from-yellow-800 to-red-500",
+  tool: "from-stone-800 to-zinc-500",
+  meter: "from-yellow-700 to-amber-400",
 };
 
 export function ProductVisual({

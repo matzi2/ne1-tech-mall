@@ -4,6 +4,7 @@ import { company } from "@/lib/company";
 export const shopNav = [
   { href: "/", label: "홈" },
   { href: "/products", label: "제품몰" },
+  { href: "/compare", label: "스펙서치" },
   { href: "/company", label: "회사소개" },
   { href: "/inquiry", label: "고객센터" },
 ] as const;

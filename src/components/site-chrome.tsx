@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AdminBar } from "@/components/admin-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { CategoryBar } from "@/components/category-bar";
+import { CompareTray } from "@/components/compare-tray";
 import { SiteHeader } from "@/components/site-header";
 
 function hideCategoryBar(pathname: string) {
@@ -33,6 +34,7 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
       <SiteHeader />
       {hideCategoryBar(pathname) ? null : <CategoryBar />}
       <main className="flex-1">{children}</main>
+      <CompareTray />
       <SiteFooter />
     </>
   );

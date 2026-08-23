@@ -23,7 +23,7 @@ import {
   type CatalogProduct,
 } from "@/lib/catalog";
 import { isAdmin } from "@/lib/company";
-import { categories } from "@/lib/products";
+import { categoryGroups, categoriesInGroup } from "@/lib/products";
 import { slugify } from "@/lib/utils";
 import { formatFileSize } from "@/lib/format";
 
@@ -235,13 +235,15 @@ export default function AdminProductNewPage() {
             value={manual.category}
             onChange={(e) => setManual({ ...manual, category: e.target.value })}
           >
-            {categories
-              .filter((item) => item.id !== "all")
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
+            {categoryGroups.map((group) => (
+              <optgroup key={group.id} label={group.label}>
+                {categoriesInGroup(group.id).map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </select>
         </div>
         <div>

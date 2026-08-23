@@ -101,6 +101,16 @@ export function SiteSearch({
                   “{query}” 전체 검색 결과 보기
                 </button>
               </li>
+              <li>
+                <button
+                  type="button"
+                  className="w-full px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => router.push(`/compare?q=${encodeURIComponent(query.trim())}`)}
+                >
+                  스펙서치에서 사양 비교
+                </button>
+              </li>
             </ul>
           )}
         </div>
