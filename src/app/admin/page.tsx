@@ -89,6 +89,10 @@ export default function AdminOpsPage() {
           <Link href="/connect/domain" className="mt-2 inline-block text-xs text-[#0046CA]">
             가비아 DNS
           </Link>
+          <p className="mt-1 break-all font-mono text-[11px] text-slate-500">
+            https://accounts.gabia.com/
+          </p>
+          <p className="break-all font-mono text-[11px] text-slate-500">https://dns.gabia.com/</p>
         </article>
       </div>
 
