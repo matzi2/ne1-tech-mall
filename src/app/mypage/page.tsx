@@ -48,6 +48,9 @@ export default function MyPage() {
               <Button asChild variant="outline">
                 <Link href="/admin/github">GitHub</Link>
               </Button>
+              <Button asChild variant="outline">
+                <Link href="/admin/nas">NAS</Link>
+              </Button>
             </>
           ) : null}
           <Button asChild variant="outline">
