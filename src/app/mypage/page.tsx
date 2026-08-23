@@ -41,9 +41,14 @@ export default function MyPage() {
         </div>
         <div className="flex gap-2">
           {isAdmin(user) ? (
-            <Button asChild variant="amber">
-              <Link href="/admin">운영화면</Link>
-            </Button>
+            <>
+              <Button asChild variant="amber">
+                <Link href="/admin">운영화면</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/admin/github">GitHub</Link>
+              </Button>
+            </>
           ) : null}
           <Button asChild variant="outline">
             <Link href="/account">가입·탈퇴</Link>
