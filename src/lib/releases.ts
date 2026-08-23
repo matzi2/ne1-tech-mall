@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.16",
+    date: "2026-08-23",
+    title: "가비아 사이트에서 직접 로그인",
+    items: [
+      "가비아 공식 로그인·DNS 화면을 작업창의 주 화면으로 둠",
+      "문자 한도가 찬 작업창 인증은 접어 두고, A(@) 값만 안내",
+    ],
+  },
+  {
     version: "0.2.15",
     date: "2026-08-23",
     title: "가비아 문자 발송 한도 안내",
