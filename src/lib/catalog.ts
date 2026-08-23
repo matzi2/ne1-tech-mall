@@ -1,6 +1,7 @@
 import { slugify } from "@/lib/utils";
 import type { Product, ProductCategory } from "@/lib/products";
 import { categories } from "@/lib/products";
+import { searchCatalog } from "@/lib/smart-search";
 
 export type ProductMedia = {
   id: string;
@@ -225,21 +226,9 @@ export function filterCatalog(
 ) {
   const list =
     category === "all" ? items : items.filter((item) => item.category === category);
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return list;
-  return list.filter((item) => {
-    const fields = [
-      item.name,
-      item.sku,
-      item.summary,
-      item.description,
-      item.leadTime,
-      ...item.specs.map((spec) => `${spec.label} ${spec.value}`),
-      ...item.photos.map((file) => file.name),
-      ...item.documents.map((file) => file.name),
-    ];
-    return fields.some((field) => field.toLowerCase().includes(q));
-  });
+  return searchCatalog(list, q);
 }
 
 export async function fileToMedia(

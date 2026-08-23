@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { useApp } from "@/components/app-providers";
 import { filterCatalog } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
+import { parseSearchIntent } from "@/lib/smart-search";
 import { cn } from "@/lib/utils";
 
 export function SiteSearch({
@@ -21,6 +22,7 @@ export function SiteSearch({
   const { catalog } = useApp();
   const [query, setQuery] = useState(initialQuery);
   const [open, setOpen] = useState(false);
+  const intent = useMemo(() => parseSearchIntent(query), [query]);
 
   const suggestions = useMemo(
     () => (query.trim().length >= 1 ? filterCatalog(catalog, query).slice(0, 6) : []),
@@ -54,7 +56,7 @@ export function SiteSearch({
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => window.setTimeout(() => setOpen(false), 120)}
-          placeholder="품번, 제품명, 사양으로 검색"
+          placeholder="품번 또는 하고 싶은 말 — 예: 3극 100A 차단기"
           className="h-full w-full bg-transparent px-2 text-sm outline-none placeholder:text-slate-400"
           aria-label="상품 검색"
         />
@@ -67,9 +69,14 @@ export function SiteSearch({
       </form>
       {open && query.trim() ? (
         <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
+          {intent.summary && intent.summary !== query.trim() ? (
+            <p className="border-b border-slate-100 px-3 py-2 text-xs text-sky-800">
+              스마트 해석 · {intent.summary}
+            </p>
+          ) : null}
           {suggestions.length === 0 ? (
             <p className="px-3 py-3 text-sm text-slate-500">
-              “{query}”에 맞는 상품이 없습니다.
+              “{query}”에 맞는 상품이 없습니다. 품번이나 사양(예: 24V 전원)으로 다시 쳐 보세요.
             </p>
           ) : (
             <ul>
@@ -82,8 +89,8 @@ export function SiteSearch({
                     onClick={() => router.push(`/products/${item.slug}`)}
                   >
                     <span>
+                      <span className="block font-mono text-xs text-slate-500">{item.sku}</span>
                       <span className="block font-medium text-navy">{item.name}</span>
-                      <span className="text-xs text-slate-500">{item.sku}</span>
                     </span>
                     <span className="shrink-0 text-xs font-semibold text-sky-700">
                       {formatPrice(item.price)}

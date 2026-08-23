@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LayoutGrid, Table2 } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductTable } from "@/components/product-table";
 import { SiteSearch } from "@/components/site-search";
 import { useApp } from "@/components/app-providers";
-import { filterCatalog } from "@/lib/catalog";
 import { categoryGroups, getCategoryGroup, matchTaxonomy, type CategoryGroupId, type ProductCategory } from "@/lib/products";
 import { shopSorts, sortCatalog, type ShopSort } from "@/lib/shop";
+import { looksConversational, parseSearchIntent, searchWithIntent, type SearchIntent } from "@/lib/smart-search";
 import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 
@@ -22,10 +22,39 @@ function ProductsBody() {
   const group = (params.get("group") as CategoryGroupId | "all") || "all";
   const sort = (params.get("sort") as ShopSort) || "featured";
   const view = params.get("view") === "table" ? "table" : "card";
+  const localIntent = useMemo(() => parseSearchIntent(q), [q]);
+  const [remoteIntent, setRemoteIntent] = useState<SearchIntent | null>(null);
+  const [searchSource, setSearchSource] = useState<"local" | "llm">("local");
+
+  useEffect(() => {
+    setRemoteIntent(null);
+    setSearchSource("local");
+    if (!looksConversational(q)) return;
+    const controller = new AbortController();
+    fetch("/api/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: q }),
+      signal: controller.signal,
+    })
+      .then((response) => response.json())
+      .then((data: { source?: "local" | "llm"; intent?: SearchIntent }) => {
+        if (data.source === "llm" && data.intent) {
+          setRemoteIntent(data.intent);
+          setSearchSource("llm");
+        }
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [q]);
+
+  const intent = remoteIntent ?? localIntent;
   const results = useMemo(() => {
-    const filtered = filterCatalog(catalog, q).filter((item) => matchTaxonomy(item.category, group, category));
+    const filtered = searchWithIntent(catalog, intent).filter((item) =>
+      matchTaxonomy(item.category, group, category),
+    );
     return sortCatalog(filtered, shopSorts.some((item) => item.id === sort) ? sort : "featured");
-  }, [catalog, category, group, q, sort]);
+  }, [catalog, category, group, intent, sort]);
 
   function setCategory(next: string) {
     const sp = new URLSearchParams(params.toString());
@@ -58,11 +87,18 @@ function ProductsBody() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="text-2xl font-bold text-navy">제품몰</h1>
       <p className="mt-1 text-sm text-slate-500">
-        품번, 제품명, 사양, 첨부 파일명으로 검색할 수 있습니다.
+        품번뿐 아니라 “3극 100A 차단기”, “재고 있는 24V 전원”처럼 말로 찾아도 됩니다.
       </p>
       <div className="mt-5 max-w-xl">
         <SiteSearch initialQuery={q} />
       </div>
+      {q ? (
+        <p className="mt-3 text-sm text-sky-800">
+          {searchSource === "llm" ? "모델 해석" : "스마트 해석"} · {intent.summary || q}
+        </p>
+      ) : (
+        <p className="mt-3 text-xs text-slate-400">예: 온습도센서 · 10k 저항 · 누전 30mA</p>
+      )}
       <div className="mt-5 flex flex-wrap gap-2">
         <button
           type="button"

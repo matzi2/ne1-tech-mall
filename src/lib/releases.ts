@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.6",
+    date: "2026-08-23",
+    title: "스마트 검색",
+    items: [
+      "품번뿐 아니라 사양·문장으로 부품을 찾음",
+      "검색창에 해석 결과를 바로 표시",
+      "OPENAI_API_KEY가 있으면 긴 문장을 모델이 이어서 해석",
+    ],
+  },
+  {
     version: "0.2.5",
     date: "2026-08-23",
     title: "BOM과 제품 표 보기",
