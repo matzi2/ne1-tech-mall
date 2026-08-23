@@ -74,7 +74,9 @@ export function isWorkSurface(pathname: string) {
 }
 
 export function workAddress(pathname: string, search = "") {
-  if (pathname.startsWith("/connect/gabia")) return "https://accounts.gabia.com/";
+  if (pathname.startsWith("/connect/gabia")) {
+    return search.includes("view=login") ? "https://accounts.gabia.com/" : "https://dns.gabia.com/";
+  }
   const cleaned = search.replace(/[?&]popup=1/g, "").replace(/^&/, "?");
   const query = cleaned === "?" ? "" : cleaned;
   return `${IN_APP_BROWSER_ORIGIN}${pathname}${query}`;

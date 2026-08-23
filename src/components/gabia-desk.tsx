@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { company } from "@/lib/company";
 import { gabiaLinks } from "@/lib/gabia";
@@ -13,18 +14,26 @@ const PAGES = [
 ] as const;
 
 export function GabiaDesk() {
-  const [page, setPage] = useState<(typeof PAGES)[number]>(PAGES[0]);
+  const searchParams = useSearchParams();
+  const initial = PAGES.find((item) => item.id === (searchParams.get("view") ?? "dns")) ?? PAGES[1];
+  const [page, setPage] = useState<(typeof PAGES)[number]>(initial);
   const [stamp, setStamp] = useState(0);
 
   return (
     <div className="flex h-[calc(100vh-7.5rem)] min-h-[640px] flex-col bg-[#f1f3f4]">
       <div className="shrink-0 border-b border-[#dadce0] bg-white px-4 py-3">
-        <p className="text-sm font-semibold text-[#000092]">이 창이 레몬의 가비아 작업창입니다</p>
+        <p className="text-sm font-semibold text-[#000092]">로그인됨 · 이제 DNS만 넣으면 됩니다</p>
         <p className="mt-1 text-sm leading-6 text-slate-700">
-          아래에서 가비아에 직접 로그인하세요. 아이디·비밀번호·보안 문자·인증번호는 이 화면에서만 입력하면 됩니다.
-          로그인 후 <strong>DNS 관리툴</strong>을 열고 호스트 <code>www</code> · 타입 <code>CNAME</code> · 값{" "}
-          <code>{company.dns.wwwTarget}.</code> 을 넣은 뒤 저장하세요.
+          아래가 가비아 DNS 관리툴입니다. <strong>ne1-tech.co.kr</strong> 을 고른 뒤 레코드를 추가하고 반드시{" "}
+          <strong>저장</strong>을 누르세요.
         </p>
+        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-slate-700">
+          <li>
+            호스트 <code>www</code> · 타입 <code>CNAME</code> · 값 <code>{company.dns.wwwTarget}.</code> (끝 마침표)
+          </li>
+          <li>MX · TXT · NS 는 이미 있으니 건드리지 않습니다.</li>
+          <li>호스팅 IP가 아직 없어 A 레코드는 보류합니다.</li>
+        </ol>
         <div className="mt-3 flex flex-wrap gap-2">
           {PAGES.map((item) => (
             <Button
@@ -41,7 +50,7 @@ export function GabiaDesk() {
             새로고침
           </Button>
           <Button type="button" size="sm" variant="outline" asChild>
-            <Link href="/connect/domain">넣을 값 보기</Link>
+            <Link href="/connect/domain">공개 DNS 조회</Link>
           </Button>
         </div>
         <p className="mt-2 truncate font-mono text-xs text-slate-500">{page.href}</p>
@@ -56,8 +65,7 @@ export function GabiaDesk() {
       />
 
       <div className="shrink-0 border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs leading-5 text-amber-950">
-        지금 넣을 값: www · CNAME · {company.dns.wwwTarget}. (끝 마침표 포함) · MX/SPF/NS는 그대로 두기 ·{" "}
-        {gabiaLinks[0].href}
+        지금 넣을 값: www · CNAME · {company.dns.wwwTarget}. (끝 마침표 포함) · {gabiaLinks[2].href}
       </div>
     </div>
   );
