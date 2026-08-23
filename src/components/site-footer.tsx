@@ -16,6 +16,12 @@ export function SiteFooter() {
           <Link href="/products" className="block hover:text-white">
             제품몰
           </Link>
+          <Link href="/compare" className="block hover:text-white">
+            스펙서치
+          </Link>
+          <Link href="/bom" className="block hover:text-white">
+            BOM 리스트
+          </Link>
           <Link href="/company" className="block hover:text-white">
             회사소개
           </Link>

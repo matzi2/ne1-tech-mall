@@ -9,10 +9,14 @@ import {
   useState,
 } from "react";
 import { company, demoAccounts, type Role } from "@/lib/company";
+import type { Inquiry, InquiryItem, InquiryStatus } from "@/lib/inquiries";
+import { INQUIRY_STORAGE } from "@/lib/inquiries";
 import { products as seedProducts } from "@/lib/products";
 import type { CatalogProduct } from "@/lib/catalog";
 import type { PaymentMethod } from "@/lib/payment";
 import { pointsFromAmount } from "@/lib/points";
+
+export type { Inquiry, InquiryItem, InquiryStatus };
 
 export type { Role };
 
@@ -82,6 +86,16 @@ const CART_KEY = "ne1-cart-v010";
 const CATALOG_KEY = "ne1-catalog-v010";
 const ORDERS_KEY = "ne1-orders-v010";
 const POINTS_KEY = "ne1-points-v010";
+const INQUIRIES_KEY = INQUIRY_STORAGE;
+
+type InquiryInput = {
+  name: string;
+  email: string;
+  phone: string;
+  companyName: string;
+  body: string;
+  items: InquiryItem[];
+};
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -119,6 +133,7 @@ type AppState = {
   extras: CatalogProduct[];
   orders: Order[];
   points: PointEntry[];
+  inquiries: Inquiry[];
   catalog: CatalogProduct[];
   cartCount: number;
   cartLines: { product: CatalogProduct; qty: number }[];
@@ -136,6 +151,8 @@ type AppState = {
   getProduct: (slug: string) => CatalogProduct | undefined;
   checkout: (input: CheckoutInput) => { error: string } | { order: Order };
   confirmTransfer: (orderId: string) => string | null;
+  submitInquiry: (input: InquiryInput) => { error: string } | { inquiry: Inquiry };
+  updateInquiryStatus: (id: string, status: InquiryStatus) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -148,6 +165,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   const [extras, setExtras] = useState<CatalogProduct[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [points, setPoints] = useState<PointEntry[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
   useEffect(() => {
     const storedUsers = readJson<StoredUser[]>(USERS_KEY, []);
@@ -168,6 +186,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     setExtras(readJson<CatalogProduct[]>(CATALOG_KEY, []));
     setOrders(readJson<Order[]>(ORDERS_KEY, []));
     setPoints(readJson<PointEntry[]>(POINTS_KEY, []));
+    setInquiries(readJson<Inquiry[]>(INQUIRIES_KEY, []));
     setReady(true);
   }, []);
 
@@ -179,7 +198,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     localStorage.setItem(CATALOG_KEY, JSON.stringify(extras));
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
     localStorage.setItem(POINTS_KEY, JSON.stringify(points));
-  }, [ready, users, user, cart, extras, orders, points]);
+    localStorage.setItem(INQUIRIES_KEY, JSON.stringify(inquiries));
+  }, [ready, users, user, cart, extras, orders, points, inquiries]);
 
   const catalog = useMemo(() => {
     const extrasBySlug = new Set(extras.map((item) => item.slug));
@@ -396,6 +416,30 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     [cartLines, pointBalance, productTotal, pushPoints, user],
   );
 
+  const submitInquiry = useCallback((input: InquiryInput) => {
+    if (!input.name.trim() || !input.email.trim() || !input.phone.trim() || !input.body.trim()) {
+      return { error: "담당자, 이메일, 연락처, 문의 내용을 입력해 주세요." };
+    }
+    if (!input.email.includes("@")) return { error: "올바른 이메일을 입력해 주세요." };
+    const inquiry: Inquiry = {
+      id: `INQ-${Date.now().toString().slice(-8)}`,
+      createdAt: new Date().toISOString(),
+      name: input.name.trim(),
+      email: input.email.trim().toLowerCase(),
+      phone: input.phone.trim(),
+      companyName: input.companyName.trim(),
+      body: input.body.trim(),
+      items: input.items,
+      status: "received",
+    };
+    setInquiries((prev) => [inquiry, ...prev]);
+    return { inquiry };
+  }, []);
+
+  const updateInquiryStatus = useCallback((id: string, status: InquiryStatus) => {
+    setInquiries((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
+  }, []);
+
   const confirmTransfer = useCallback(
     (orderId: string) => {
       const target = orders.find((item) => item.id === orderId);
@@ -420,6 +464,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     extras,
     orders,
     points,
+    inquiries,
     catalog,
     cartCount: cart.reduce((sum, item) => sum + item.qty, 0),
     cartLines,
@@ -437,6 +482,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     getProduct,
     checkout,
     confirmTransfer,
+    submitInquiry,
+    updateInquiryStatus,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

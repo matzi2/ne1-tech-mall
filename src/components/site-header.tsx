@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, UserRound } from "lucide-react";
+import { ClipboardList, Menu, ShoppingCart, UserRound } from "lucide-react";
+import { useBom } from "@/components/bom-provider";
 import { useState } from "react";
 import { useApp } from "@/components/app-providers";
 import { Ne1Logo } from "@/components/ne1-logo";
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 export function SiteHeader() {
   const pathname = usePathname();
   const { user, cartCount, pointBalance } = useApp();
+  const bom = useBom();
   const [open, setOpen] = useState(false);
   const isAuth =
     pathname.startsWith("/login") ||
@@ -79,6 +81,16 @@ export function SiteHeader() {
               <Link href="/login">로그인</Link>
             </Button>
           )}
+          <Button asChild variant="secondary" size="icon" className="relative bg-white/10 text-white hover:bg-white/20">
+            <Link href="/bom" aria-label="BOM 리스트">
+              <ClipboardList className="size-4" />
+              {bom.count > 0 ? (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-sky-400 px-1 text-[10px] font-bold text-navy">
+                  {bom.count}
+                </span>
+              ) : null}
+            </Link>
+          </Button>
           <Button asChild variant="secondary" size="icon" className="relative bg-white/10 text-white hover:bg-white/20">
             <Link href="/cart" aria-label="장바구니">
               <ShoppingCart className="size-4" />

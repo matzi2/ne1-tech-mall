@@ -6,11 +6,12 @@ import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
 import { isAdmin } from "@/lib/company";
 import { formatPrice } from "@/lib/format";
+import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { formatPoints } from "@/lib/points";
 
 export default function MyPage() {
   const router = useRouter();
-  const { user, logout, orders, points, pointBalance, confirmTransfer, ready } = useApp();
+  const { user, logout, orders, points, inquiries, pointBalance, confirmTransfer, ready } = useApp();
 
   if (!ready) return <div className="p-10 text-sm text-slate-500">불러오는 중입니다.</div>;
 
@@ -28,6 +29,7 @@ export default function MyPage() {
 
   const myOrders = orders.filter((order) => order.email === user.email);
   const myPoints = [...points].filter((entry) => entry.email === user.email).reverse();
+  const myInquiries = inquiries.filter((item) => item.email === user.email);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -70,6 +72,40 @@ export default function MyPage() {
                     입금 완료 처리
                   </Button>
                 ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="mt-8">
+        <h2 className="font-semibold text-navy">견적·문의</h2>
+        {myInquiries.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">
+            아직 문의가 없습니다.{" "}
+            <Link href="/inquiry" className="text-[#0046CA] hover:underline">
+              견적·문의
+            </Link>
+            나{" "}
+            <Link href="/bom" className="text-[#0046CA] hover:underline">
+              BOM
+            </Link>
+            에서 보낼 수 있습니다.
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {myInquiries.map((item) => (
+              <li key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-semibold">{item.id}</p>
+                  <span className="text-xs text-slate-500">{inquiryStatusLabel[item.status]}</span>
+                </div>
+                <p className="mt-1 text-slate-600">{item.body}</p>
+                {item.items.length ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    BOM {item.items.length}개 품목 · 참고 {formatPrice(inquiryTotal(item.items))}
+                  </p>
+                ) : null}
+                <p className="mt-1 text-xs text-slate-400">{new Date(item.createdAt).toLocaleString("ko-KR")}</p>
               </li>
             ))}
           </ul>

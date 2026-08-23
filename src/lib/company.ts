@@ -18,7 +18,7 @@ export const company = {
   nameKo: "엔이원텍",
   nameEn: "NE1-TECH",
   legalName: "주식회사 엔이원텍",
-  version: "0.2.4",
+  version: "0.2.5",
   releasedAt: "2026-08-23",
   domain: "NE1-TECH.CO.KR",
   siteUrl: "https://ne1-tech.co.kr",
@@ -35,7 +35,7 @@ export const company = {
   },
   tagline: "전자부품, 품번으로 찾고 사양으로 비교합니다.",
   description:
-    "엔이원텍(NE1-TECH)은 반도체, 센서, 수동소자, 전원, 커넥터, 스위치/전기부품, 제어기기 등 디바이스마트·IC뱅큐와 같은 전자부품을 취급합니다. 인천 청라에서 재고·주문 납품을 대응합니다.",
+    "엔이원텍(NE1-TECH)은 반도체, 센서, 수동소자, 전원, 커넥터, 스위치/전기부품, 제어기기 등 전자부품을 취급합니다. 재고·주문 납품을 대응합니다.",
   founded: "2020.09.16",
   ceo: "김태극",
   industry: "전자부품 유통·공급",
@@ -65,7 +65,7 @@ export const companyHistory = [
   {
     year: "2020",
     title: "주식회사 엔이원텍 설립",
-    body: "인천 청라에서 산업용 전자부품 공급 법인으로 출발했습니다.",
+    body: "산업용 전자부품 공급 법인으로 출발했습니다.",
   },
   {
     year: "2022",
@@ -74,7 +74,7 @@ export const companyHistory = [
   },
   {
     year: "2024",
-    title: "청라 에이스하이테크시티 거점 운영",
+    title: "에이스하이테크시티 거점 운영",
     body: "수도권 재고 대응과 소량 주문 납기를 맞출 수 있게 거점을 운영합니다.",
   },
   {
@@ -118,7 +118,7 @@ export const demoAccounts: {
   {
     type: "사업자 회원",
     email: "biz@ne1-tech.co.kr",
-    name: "청라전기 담당자",
+    name: "사업자 담당자",
     role: "business",
   },
   {

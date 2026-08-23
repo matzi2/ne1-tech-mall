@@ -2,13 +2,16 @@
 
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LayoutGrid, Table2 } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { ProductTable } from "@/components/product-table";
 import { SiteSearch } from "@/components/site-search";
 import { useApp } from "@/components/app-providers";
 import { filterCatalog } from "@/lib/catalog";
 import { categoryGroups, getCategoryGroup, matchTaxonomy, type CategoryGroupId, type ProductCategory } from "@/lib/products";
 import { shopSorts, sortCatalog, type ShopSort } from "@/lib/shop";
 import { Suspense } from "react";
+import { cn } from "@/lib/utils";
 
 function ProductsBody() {
   const params = useSearchParams();
@@ -18,6 +21,7 @@ function ProductsBody() {
   const category = (params.get("category") as ProductCategory | "all") || "all";
   const group = (params.get("group") as CategoryGroupId | "all") || "all";
   const sort = (params.get("sort") as ShopSort) || "featured";
+  const view = params.get("view") === "table" ? "table" : "card";
   const results = useMemo(() => {
     const filtered = filterCatalog(catalog, q).filter((item) => matchTaxonomy(item.category, group, category));
     return sortCatalog(filtered, shopSorts.some((item) => item.id === sort) ? sort : "featured");
@@ -40,6 +44,13 @@ function ProductsBody() {
     const sp = new URLSearchParams(params.toString());
     if (next === "featured") sp.delete("sort");
     else sp.set("sort", next);
+    router.push(`/products?${sp.toString()}`);
+  }
+
+  function setView(next: "card" | "table") {
+    const sp = new URLSearchParams(params.toString());
+    if (next === "card") sp.delete("view");
+    else sp.set("view", "table");
     router.push(`/products?${sp.toString()}`);
   }
 
@@ -87,7 +98,31 @@ function ProductsBody() {
           {q ? `“${q}” 검색 결과 ` : "전체 "}
           {ready ? `${results.length}건` : "불러오는 중"}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="mr-1 flex rounded-full border border-slate-200 bg-white p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("card")}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs",
+                view === "card" ? "bg-navy text-white" : "text-slate-600",
+              )}
+            >
+              <LayoutGrid className="size-3.5" />
+              카드
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("table")}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs",
+                view === "table" ? "bg-navy text-white" : "text-slate-600",
+              )}
+            >
+              <Table2 className="size-3.5" />
+              표
+            </button>
+          </div>
           {shopSorts.map((item) => (
             <button
               key={item.id}
@@ -112,11 +147,15 @@ function ProductsBody() {
           </p>
         </div>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {results.map((product) => (
-            <ProductCard key={product.slug} product={product} />
-          ))}
-        </div>
+        view === "table" ? (
+          <ProductTable products={results} />
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {results.map((product) => (
+              <ProductCard key={product.slug} product={product} />
+            ))}
+          </div>
+        )
       )}
     </div>
   );

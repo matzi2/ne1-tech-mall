@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { formatFileSize, formatPrice } from "@/lib/format";
 import { useCompare } from "@/components/compare-provider";
 import { getCategoryGroup, getCategoryLabel } from "@/lib/products";
+import { useBom } from "@/components/bom-provider";
+import { alternativeProducts } from "@/lib/bom";
 import { relatedProducts } from "@/lib/shop";
 
 export default function ProductDetailPage() {
@@ -19,9 +21,12 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { catalog, getProduct, addToCart, ready } = useApp();
   const compare = useCompare();
+  const bom = useBom();
   const [qty, setQty] = useState(1);
+  const [note, setNote] = useState("");
   const product = getProduct(slug);
   const related = product ? relatedProducts(catalog, product.slug, product.category) : [];
+  const alternatives = product ? alternativeProducts(catalog, product) : [];
 
   if (!ready) {
     return <div className="p-10 text-sm text-slate-500">상품을 불러오는 중입니다.</div>;
@@ -82,6 +87,16 @@ export default function ProductDetailPage() {
           >
             바로 주문
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              bom.add(product.slug, qty);
+              setNote(`BOM에 ${qty}개 넣었습니다.`);
+            }}
+          >
+            {bom.has(product.slug) ? `BOM ${bom.qtyOf(product.slug)}` : "BOM에 넣기"}
+          </Button>
           <Button asChild variant="outline">
             <Link href="/inquiry">견적 문의</Link>
           </Button>
@@ -89,6 +104,14 @@ export default function ProductDetailPage() {
             {compare.has(product.slug) ? "비교에서 빼기" : "스펙 비교"}
           </Button>
         </div>
+        {note ? (
+          <p className="mt-3 text-sm text-sky-700">
+            {note}{" "}
+            <Link href="/bom" className="underline">
+              BOM 보기
+            </Link>
+          </p>
+        ) : null}
         {product.specs.length > 0 ? (
           <dl className="mt-8 divide-y rounded-xl border border-slate-200 bg-white">
             {product.specs.map((spec) => (
@@ -114,7 +137,30 @@ export default function ProductDetailPage() {
           </div>
         ) : null}
       </div>
-      {related.length ? (
+      {alternatives.length ? (
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-bold text-navy">대체품</h2>
+          <p className="mt-1 text-sm text-slate-500">같은 품목·분류에서 대신 쓸 수 있는 부품입니다.</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {alternatives.map((item) => (
+              <div key={item.slug} className="space-y-2">
+                <ProductCard product={item} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    bom.add(item.slug, 1);
+                    setNote(`${item.sku}를 대체품으로 BOM에 넣었습니다.`);
+                  }}
+                >
+                  대체로 BOM에 넣기
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : related.length ? (
         <div className="lg:col-span-2">
           <h2 className="text-xl font-bold text-navy">같은 품목</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

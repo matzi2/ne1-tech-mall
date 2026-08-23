@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { company, isAdmin } from "@/lib/company";
 import { releases } from "@/lib/releases";
 import { formatPrice } from "@/lib/format";
+import { inquiryStatusLabel, inquiryTotal } from "@/lib/inquiries";
 import { domainPlan } from "@/lib/dns";
 import type { GitHubConnectState } from "@/lib/github-types";
 
@@ -16,7 +17,7 @@ type DomainStatus = {
 };
 
 export default function AdminOpsPage() {
-  const { user, ready, orders, catalog, extras, users, confirmTransfer } = useApp();
+  const { user, ready, orders, catalog, extras, users, inquiries, confirmTransfer, updateInquiryStatus } = useApp();
   const [github, setGithub] = useState<GitHubConnectState | null>(null);
   const [domain, setDomain] = useState<DomainStatus | null>(null);
 
@@ -56,7 +57,7 @@ export default function AdminOpsPage() {
         {user?.name} · {user?.email}. 배포 {company.releasedAt} · 이 화면은 상단 노란 막대에서 항상 열 수 있습니다.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">주문</p>
           <p className="mt-1 text-2xl font-bold text-navy">{orders.length}</p>
@@ -70,6 +71,14 @@ export default function AdminOpsPage() {
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">회원</p>
           <p className="mt-1 text-2xl font-bold text-navy">{users.length}</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-xs text-slate-500">견적·문의</p>
+          <p className="mt-1 text-2xl font-bold text-navy">{inquiries.length}</p>
+          <p className="mt-1 text-xs text-slate-500">
+            접수 {inquiries.filter((item) => item.status === "received").length} · 검토{" "}
+            {inquiries.filter((item) => item.status === "reviewing").length}
+          </p>
         </article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5">
           <p className="text-xs text-slate-500">GitHub</p>
@@ -122,6 +131,54 @@ export default function AdminOpsPage() {
                   </div>
                 </li>
               ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 className="text-lg font-semibold text-navy">견적·문의</h2>
+        {inquiries.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">접수된 문의가 없습니다. 쇼핑몰 견적·문의나 BOM에서 오면 여기에 모입니다.</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {inquiries.map((item) => (
+              <li key={item.id} className="rounded-xl border border-slate-100 p-4 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">
+                      {item.id} · {inquiryStatusLabel[item.status]}
+                    </p>
+                    <p className="text-slate-500">
+                      {item.name} · {item.email} · {item.phone}
+                      {item.companyName ? ` · ${item.companyName}` : ""}
+                    </p>
+                    <p className="mt-2 text-slate-700">{item.body}</p>
+                    {item.items.length ? (
+                      <ul className="mt-2 space-y-1 text-xs text-slate-500">
+                        {item.items.map((line) => (
+                          <li key={`${item.id}-${line.slug}`}>
+                            {line.sku} · {line.name} × {line.qty} · {formatPrice(line.unitPrice)}
+                          </li>
+                        ))}
+                        <li>참고 합계 {formatPrice(inquiryTotal(item.items))}</li>
+                      </ul>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {item.status === "received" ? (
+                      <Button size="sm" variant="outline" onClick={() => updateInquiryStatus(item.id, "reviewing")}>
+                        검토 중
+                      </Button>
+                    ) : null}
+                    {item.status !== "quoted" ? (
+                      <Button size="sm" onClick={() => updateInquiryStatus(item.id, "quoted")}>
+                        견적 회신
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
           </ul>
         )}
       </section>

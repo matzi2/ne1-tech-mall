@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Noto_Sans_KR } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
+import { BomProvider } from "@/components/bom-provider";
 import { CompareProvider } from "@/components/compare-provider";
 import { SiteChrome } from "@/components/site-chrome";
 import { company } from "@/lib/company";
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col font-sans">
         <AppProviders>
           <CompareProvider>
-            <SiteChrome>{children}</SiteChrome>
+            <BomProvider>
+              <SiteChrome>{children}</SiteChrome>
+            </BomProvider>
           </CompareProvider>
         </AppProviders>
       </body>

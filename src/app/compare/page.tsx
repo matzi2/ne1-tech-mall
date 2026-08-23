@@ -73,7 +73,7 @@ function CompareBody() {
           <p className="text-xs font-semibold tracking-wide text-amber-300">SPEC SEARCH</p>
           <h1 className="mt-1 text-3xl font-bold">스펙서치 · 부품 비교</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/75">
-            아이씨뱅큐 스펙서치·디바이스마트 품번 검색처럼, 품번·정격으로 찾고 사양을 표로 맞춰 봅니다. 비교는{" "}
+            품번·정격으로 찾고 사양을 표로 맞춰 봅니다. 비교는{" "}
             {COMPARE_MAX}개까지입니다.
           </p>
           <form

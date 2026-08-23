@@ -5,6 +5,7 @@ export const shopNav = [
   { href: "/", label: "홈" },
   { href: "/products", label: "제품몰" },
   { href: "/compare", label: "스펙서치" },
+  { href: "/bom", label: "BOM" },
   { href: "/company", label: "회사소개" },
   { href: "/inquiry", label: "고객센터" },
 ] as const;
@@ -38,7 +39,7 @@ export const shopBanners = [
 
 export const shopSteps = [
   { n: "1", label: "홈·검색", href: "/" },
-  { n: "2", label: "상품 담기", href: "/products" },
+  { n: "2", label: "담기·BOM", href: "/bom" },
   { n: "3", label: "주문·결제", href: "/checkout" },
   { n: "4", label: "출고 안내", href: "/inquiry" },
 ] as const;

@@ -15,7 +15,7 @@ export default function CartPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-navy">장바구니가 비어 있습니다.</h1>
-        <p className="mt-2 text-slate-500">필요한 차단기, 스위치, 제어반을 검색해 담아 보세요.</p>
+        <p className="mt-2 text-slate-500">필요한 전자부품을 검색해 담거나 BOM으로 모은 뒤 주문하세요.</p>
         <Button asChild className="mt-6">
           <Link href="/products">제품몰 가기</Link>
         </Button>
