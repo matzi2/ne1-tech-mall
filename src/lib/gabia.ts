@@ -94,8 +94,8 @@ export function gabiaRecords(ipv4 = ""): GabiaRecord[] {
       type: "TXT",
       value: "v=DMARC1; p=none;",
       ttl: company.dns.ttl,
-      action: "add",
-      note: "메일 정책. 호스트는 _dmarc, 값에 따옴표 없이 넣습니다.",
+      action: "keep",
+      note: "공개 DNS에 이미 있습니다. 다시 넣지 마세요.",
     },
     {
       id: "ns",

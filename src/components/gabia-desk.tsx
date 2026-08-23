@@ -22,17 +22,11 @@ export function GabiaDesk() {
   return (
     <div className="flex h-[calc(100vh-7.5rem)] min-h-[640px] flex-col bg-[#f1f3f4]">
       <div className="shrink-0 border-b border-[#dadce0] bg-white px-4 py-3">
-        <p className="text-sm font-semibold text-[#000092]">추가 DNS · _dmarc 를 넣으세요</p>
+        <p className="text-sm font-semibold text-[#000092]">www · _dmarc 반영됨 · 다음은 A 레코드</p>
         <p className="mt-1 text-sm leading-6 text-slate-700">
-          <strong>ne1-tech.co.kr</strong> 을 고른 뒤 아래만 추가하고 <strong>저장</strong>을 누르세요. www CNAME · MX ·
-          SPF · NS는 이미 있으니 다시 넣지 마세요.
+          공개 DNS에 www CNAME과 _dmarc TXT가 있습니다. MX·SPF·NS는 그대로 두세요. 다음 순서는 고정 호스팅 IPv4로
+          호스트 <code>@</code> · 타입 <code>A</code> 를 넣는 것입니다.
         </p>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-6 text-slate-700">
-          <li>
-            추가: 호스트 <code>_dmarc</code> · 타입 <code>TXT</code> · 값 <code>v=DMARC1; p=none;</code>
-          </li>
-          <li>A 레코드(호스트 @)는 고정 호스팅 IPv4가 생기면 숫자 IP만 넣습니다. 지금은 보류입니다.</li>
-        </ol>
         <div className="mt-3 flex flex-wrap gap-2">
           {PAGES.map((item) => (
             <Button
@@ -64,7 +58,7 @@ export function GabiaDesk() {
       />
 
       <div className="shrink-0 border-t border-amber-200 bg-amber-50 px-4 py-2 text-xs leading-5 text-amber-950">
-        지금 추가: _dmarc · TXT · v=DMARC1; p=none; · {gabiaLinks[2].href}
+        다음: 호스트 @ · A · 고정 호스팅 IPv4 · {gabiaLinks[2].href}
       </div>
     </div>
   );

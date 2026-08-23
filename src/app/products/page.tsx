@@ -7,6 +7,7 @@ import { SiteSearch } from "@/components/site-search";
 import { useApp } from "@/components/app-providers";
 import { filterCatalog } from "@/lib/catalog";
 import { categories, type ProductCategory } from "@/lib/products";
+import { shopSorts, sortCatalog, type ShopSort } from "@/lib/shop";
 import { Suspense } from "react";
 
 function ProductsBody() {
@@ -15,15 +16,23 @@ function ProductsBody() {
   const { catalog, ready } = useApp();
   const q = params.get("q") ?? "";
   const category = (params.get("category") as ProductCategory | "all") || "all";
-  const results = useMemo(
-    () => filterCatalog(catalog, q, category === "all" || !category ? "all" : category),
-    [catalog, category, q],
-  );
+  const sort = (params.get("sort") as ShopSort) || "featured";
+  const results = useMemo(() => {
+    const filtered = filterCatalog(catalog, q, category === "all" || !category ? "all" : category);
+    return sortCatalog(filtered, shopSorts.some((item) => item.id === sort) ? sort : "featured");
+  }, [catalog, category, q, sort]);
 
   function setCategory(next: string) {
     const sp = new URLSearchParams(params.toString());
     if (next === "all") sp.delete("category");
     else sp.set("category", next);
+    router.push(`/products?${sp.toString()}`);
+  }
+
+  function setSort(next: ShopSort) {
+    const sp = new URLSearchParams(params.toString());
+    if (next === "featured") sp.delete("sort");
+    else sp.set("sort", next);
     router.push(`/products?${sp.toString()}`);
   }
 
@@ -52,10 +61,28 @@ function ProductsBody() {
           </button>
         ))}
       </div>
-      <p className="mt-4 text-sm text-slate-500">
-        {q ? `“${q}” 검색 결과 ` : "전체 "}
-        {ready ? `${results.length}건` : "불러오는 중"}
-      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500">
+          {q ? `“${q}” 검색 결과 ` : "전체 "}
+          {ready ? `${results.length}건` : "불러오는 중"}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {shopSorts.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setSort(item.id)}
+              className={`rounded-full px-3 py-1 text-xs ${
+                item.id === sort || (item.id === "featured" && !params.get("sort"))
+                  ? "bg-navy text-white"
+                  : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
       {ready && results.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="font-semibold text-navy">검색 결과가 없습니다.</p>

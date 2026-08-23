@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { ProductCard } from "@/components/product-card";
 import { useApp } from "@/components/app-providers";
 import { ProductVisual } from "@/components/product-visual";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatFileSize, formatPrice } from "@/lib/format";
 import { getCategoryLabel } from "@/lib/products";
+import { relatedProducts } from "@/lib/shop";
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
-  const { getProduct, addToCart, ready } = useApp();
+  const { catalog, getProduct, addToCart, ready } = useApp();
   const [qty, setQty] = useState(1);
   const product = getProduct(slug);
+  const related = product ? relatedProducts(catalog, product.slug, product.category) : [];
 
   if (!ready) {
     return <div className="p-10 text-sm text-slate-500">상품을 불러오는 중입니다.</div>;
@@ -63,6 +66,15 @@ export default function ProductDetailPage() {
           >
             장바구니 담기
           </Button>
+          <Button
+            variant="navy"
+            onClick={() => {
+              addToCart(product.slug, qty);
+              router.push("/checkout");
+            }}
+          >
+            바로 주문
+          </Button>
           <Button asChild variant="outline">
             <Link href="/inquiry">견적 문의</Link>
           </Button>
@@ -92,6 +104,16 @@ export default function ProductDetailPage() {
           </div>
         ) : null}
       </div>
+      {related.length ? (
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-bold text-navy">같은 품목</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((item) => (
+              <ProductCard key={item.slug} product={item} />
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

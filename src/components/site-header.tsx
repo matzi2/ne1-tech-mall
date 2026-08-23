@@ -10,15 +10,8 @@ import { SiteSearch } from "@/components/site-search";
 import { Button } from "@/components/ui/button";
 import { company, isAdmin } from "@/lib/company";
 import { formatPoints } from "@/lib/points";
+import { shopNav } from "@/lib/shop";
 import { cn } from "@/lib/utils";
-
-const nav = [
-  { href: "/login", label: "로그인" },
-  { href: "/connect", label: "사이트 연결" },
-  { href: "/company", label: "회사소개" },
-  { href: "/products", label: "제품몰" },
-  { href: "/inquiry", label: "견적·문의" },
-];
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -48,15 +41,13 @@ export function SiteHeader() {
         </Link>
         <SiteSearch compact className="hidden max-w-md flex-1 md:block" />
         <nav className="hidden items-center gap-5 text-sm md:flex">
-          {nav.map((item) => (
+          {shopNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "hover:text-sky-300",
-                (item.href === "/connect"
-                  ? pathname === "/connect"
-                  : pathname.startsWith(item.href)) && "text-sky-300",
+                (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)) && "text-sky-300",
               )}
             >
               {item.label}
@@ -111,7 +102,7 @@ export function SiteHeader() {
       {open ? (
         <div className="space-y-3 border-t border-white/10 px-4 py-3 md:hidden">
           <SiteSearch compact />
-          {nav.map((item) => (
+          {shopNav.map((item) => (
             <Link key={item.href} href={item.href} className="block py-1" onClick={() => setOpen(false)}>
               {item.label}
             </Link>

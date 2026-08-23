@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AdminBar } from "@/components/admin-bar";
 import { InAppBrowser } from "@/components/in-app-browser";
 import { SiteFooter } from "@/components/site-footer";
+import { CategoryBar } from "@/components/category-bar";
 import { SiteHeader } from "@/components/site-header";
 import { isWorkSurface } from "@/lib/in-app-browser";
 
@@ -24,6 +25,7 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
     <>
       <AdminBar />
       <SiteHeader />
+      {pathname.startsWith("/admin") || pathname.startsWith("/history") ? null : <CategoryBar />}
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </>

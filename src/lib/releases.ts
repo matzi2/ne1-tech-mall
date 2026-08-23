@@ -7,6 +7,16 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.1.9",
+    date: "2026-08-23",
+    title: "홈쇼핑 순서로 홈·제품몰 이어가기",
+    items: [
+      "오늘 추천, 품목, 베스트에서 담기·바로 주문",
+      "제품몰 정렬과 같은 품목 추천",
+      "www·_dmarc 반영. 다음은 호스팅 A 레코드",
+    ],
+  },
+  {
     version: "0.1.8",
     date: "2026-08-23",
     title: "추가 DNS와 호스팅 IP 안내",
