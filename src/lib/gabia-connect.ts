@@ -24,6 +24,8 @@ function empty(): StoredState {
     message: null,
     applied: [],
     foreignChannel: null,
+    phoneMasked: null,
+    emailMasked: null,
     cookies: {},
     token: null,
     captchaVcid: null,
@@ -41,6 +43,8 @@ function publicView(state: StoredState): GabiaPublicState {
     message: state.message,
     applied: state.applied,
     foreignChannel: state.foreignChannel,
+    phoneMasked: state.phoneMasked,
+    emailMasked: state.emailMasked,
   };
 }
 
@@ -92,7 +96,12 @@ async function gabiaFetch(state: StoredState, url: string, init: RequestInit = {
 }
 
 export async function gabiaStatus() {
-  return publicView(await load());
+  const state = await load();
+  if (state.status === "foreign" && state.userId && !state.phoneMasked) {
+    await fillForeignContacts(state, state.userId);
+    await save(state);
+  }
+  return publicView(state);
 }
 
 export async function gabiaInit() {
@@ -216,10 +225,11 @@ export async function gabiaLogin(input: { userId: string; password: string; capt
     state.status = "foreign";
     state.userId = payload.userId;
     state.foreignChannel = null;
+    await fillForeignContacts(state, payload.userId);
     state.message =
       loginCode === "OTP_FOREIGN"
         ? "해외 IP + OTP 입니다. 아래 휴대전화 또는 이메일로 먼저 인증해 주세요."
-        : "이 작업 서버가 한국 밖이라 가비아가 해외 IP 추가 인증을 요구합니다. 휴대전화 또는 이메일로 인증번호를 받으세요.";
+        : `이 작업 서버가 한국 밖이라 가비아가 해외 IP 인증을 요구합니다. 등록 번호 ${state.phoneMasked ?? ""} 또는 메일 ${state.emailMasked ?? ""} 로 인증번호를 받으세요.`;
     await save(state);
     return publicView(state);
   }
@@ -279,13 +289,39 @@ async function finishLogin(
   return gabiaApply();
 }
 
+function maskPhone(value?: string | null) {
+  const digits = (value ?? "").replace(/\D/g, "");
+  if (digits.length < 7) return value ?? null;
+  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
+}
+
+function maskEmail(value?: string | null) {
+  if (!value || !value.includes("@")) return value ?? null;
+  const [name, host] = value.split("@");
+  const visible = name.slice(0, 2);
+  return `${visible}${"*".repeat(Math.max(1, name.length - 2))}@${host}`;
+}
+
+async function fillForeignContacts(state: StoredState, userId: string) {
+  const response = await gabiaFetch(
+    state,
+    `https://member-public-api.gabia.com/v1/auth/login/foreign-access?userId=${encodeURIComponent(userId)}`,
+    { headers: { Origin: "https://accounts.gabia.com", Referer: "https://accounts.gabia.com/" } },
+  );
+  const data = (await response.json().catch(() => ({}))) as { phone?: string; email?: string };
+  state.phoneMasked = maskPhone(data.phone);
+  state.emailMasked = maskEmail(data.email);
+}
+
 export async function gabiaForeignSend(input: { userId: string; password: string; channel: "sms" | "ems" }) {
   const state = await load();
+  await fillForeignContacts(state, input.userId.trim());
   const body = {
     userId: input.userId.trim(),
     userPwd: input.password,
     origin: "www",
     method: "Gabia",
+    token: state.token,
   };
   const response = await gabiaFetch(
     state,
@@ -301,12 +337,15 @@ export async function gabiaForeignSend(input: { userId: string; password: string
     },
   );
   const data = (await response.json().catch(() => ({}))) as {
+    result?: boolean;
     message?: string;
     errorMessage?: string;
     data?: { auth_token?: string; message?: string };
   };
-  if (!response.ok) {
-    state.message = data.errorMessage || data.message || "인증번호 발송에 실패했습니다.";
+  if (!response.ok || data.result === false) {
+    state.status = "foreign";
+    state.message =
+      data.message || data.errorMessage || "인증번호 발송에 실패했습니다. 비밀번호를 다시 넣고 눌러 주세요.";
     await save(state);
     return publicView(state);
   }

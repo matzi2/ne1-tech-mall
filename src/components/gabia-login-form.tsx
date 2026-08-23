@@ -49,7 +49,14 @@ export function GabiaLoginForm() {
     });
     const next = (await response.json()) as GabiaPublicState;
     setState(next);
-    if (next.status !== "foreign") {
+    if (next.status === "foreign" && password) {
+      const sent = await fetch("/api/connect/gabia/foreign/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, password, channel: "sms" }),
+      });
+      setState((await sent.json()) as GabiaPublicState);
+    } else if (next.status !== "foreign") {
       setPassword("");
       setCaptchaValue("");
     }
@@ -116,6 +123,9 @@ export function GabiaLoginForm() {
       ) : foreign ? (
         <form className="mt-4 space-y-3" onSubmit={verifyForeign}>
           <p className="text-sm font-semibold text-navy">해외 IP 추가 인증</p>
+          <p className="text-sm text-slate-700">
+            가비아 등록 휴대전화 {state.phoneMasked ?? "(확인 중)"} · 메일 {state.emailMasked ?? "(확인 중)"}
+          </p>
           <div>
             <Label htmlFor="gabia-id-f">가비아 아이디</Label>
             <Input id="gabia-id-f" className="mt-1" value={userId} onChange={(event) => setUserId(event.target.value)} />
