@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.22",
+    date: "2026-08-23",
+    title: "NAS Docker 컨테이너 기동",
+    items: [
+      "시놀로지 Docker에 ne1-tech-mall 컨테이너를 올려 내부 43177에서 실행",
+      "공개 HTTPS는 DSM 역방향 프록시와 Let's Encrypt가 남음",
+    ],
+  },
+  {
     version: "0.2.21",
     date: "2026-08-23",
     title: "QuickConnect DSM 접속",

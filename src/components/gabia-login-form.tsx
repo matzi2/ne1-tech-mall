@@ -169,9 +169,9 @@ export function GabiaLoginForm() {
   const foreign = state?.status === "foreign";
   const sendLimited =
     Boolean(state) &&
-    (state.lastAction === "send_limit" ||
-      state.sendCount >= 3 ||
-      /최대 발송|발송 횟수/.test(state.message ?? ""));
+    (state?.lastAction === "send_limit" ||
+      (state?.sendCount ?? 0) >= 3 ||
+      /최대 발송|발송 횟수/.test(state?.message ?? ""));
 
   return (
     <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">

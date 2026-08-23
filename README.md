@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.2.21** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.2.22** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -68,15 +68,13 @@ Preview는 쇼핑몰 홈입니다. 시놀로지·가비아 같은 개발 작업�
 
 관리자 NAS 개발 창은 `/admin/nas` 입니다. DSM 주소는 `http://QuickConnect.to/matzi57` 입니다. 아이디·비밀번호·OTP를 이 창에 넣고 접속합니다. 쇼핑몰 메뉴에는 없습니다.
 
-```bash
-# NAS SSH 또는 컨테이너 관리자 프로젝트
-sudo mkdir -p /volume1/docker/ne1-tech-mall
-sudo git clone https://github.com/matzi2/ne1-tech-mall.git /volume1/docker/ne1-tech-mall
-cd /volume1/docker/ne1-tech-mall
-sudo git fetch origin
-sudo git checkout main
-sudo git pull origin main
-sudo docker compose up -d --build
-```
+시놀로지 Docker 컨테이너 `ne1-tech-mall` 은 NAS 내부 `127.0.0.1:43177` 에서 실행 중입니다. 공유기에서 43177은 열지 않습니다.
 
-컨테이너는 `43177`만 엽니다. HTTPS는 DSM 역방향 프록시(`ne1-tech.co.kr` → `127.0.0.1:43177`)가 담당합니다. 공유기에서 TCP 80·443만 NAS로 넘기고, DSM(5000·5001)은 인터넷에 열지 않습니다.
+다음(DSM 제어판):
+
+1. 로그인 포털 → 고급 → 역방향 프록시  
+   - 소스 HTTPS `ne1-tech.co.kr` 443 → 대상 HTTP `127.0.0.1` 43177  
+   - `www.ne1-tech.co.kr` 도 같은 대상으로 하나 더  
+2. 보안 → 인증서 → Let's Encrypt (`ne1-tech.co.kr`, SAN `www.ne1-tech.co.kr`)
+
+공유기에서 TCP 80·443만 NAS로 넘기고, DSM(5000·5001)·SSH(22)는 인터넷에 열지 않습니다.

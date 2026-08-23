@@ -154,7 +154,7 @@ export const nasSteps = [
   {
     id: "compose",
     title: "컨테이너 실행",
-    body: "컨테이너 관리자 → 프로젝트 → 생성. 경로를 소스 폴더로 두고 docker-compose.yml을 사용합니다. 웹 포트는 내부 43177만 엽니다.",
+    body: "Docker 컨테이너 ne1-tech-mall 이 내부 43177에서 실행 중입니다. 공유기에서 43177은 열지 않습니다.",
   },
   {
     id: "proxy",
