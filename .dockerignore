@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+AGENTS.md
+CLAUDE.md
+/agent-tools
+/terminals
+coverage
+.env*
+npm-debug.log*

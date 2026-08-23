@@ -1,6 +1,6 @@
 # 엔이원텍 쇼핑몰 (NE1-TECH)
 
-주식회사 엔이원텍 공식 쇼핑몰 **v0.2.0** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
+주식회사 엔이원텍 공식 쇼핑몰 **v0.2.1** (2026-08-23). 도메인: [NE1-TECH.CO.KR](https://ne1-tech.co.kr)
 
 버전 히스토리는 [CHANGELOG.md](./CHANGELOG.md) 와 `/history` 에서 확인합니다. 배포할 때마다 버전과 히스토리를 같이 올립니다.
 
@@ -58,4 +58,18 @@ Preview는 쇼핑몰 홈입니다. 개발용 Chrome 작업창은 정리했고, `
 | @ | TXT | `v=spf1 include:_spf.daum.net ~all` | 메일 발신 확인 |
 | @ | NS | `ns.gabia.co.kr`, `ns1.gabia.co.kr`, `ns.gabia.net` | 가비아 네임서버 |
 
-호스팅 IP가 정해지면 가비아에 A 레코드와 www CNAME을 등록하면 됩니다.
+호스팅은 **회사 공인 IP 아래 시놀로지 NAS** 입니다. 가비아 A(`@`)에는 공유기 WAN IPv4를 넣습니다. 시놀로지 내부 IP는 넣지 않습니다.
+
+## 시놀로지 배포
+
+관리자 화면 `/connect/nas` 에 공유기 포트포워드·역방향 프록시·인증서 순서가 있습니다.
+
+```bash
+# NAS SSH 또는 컨테이너 관리자 프로젝트
+sudo mkdir -p /volume1/docker/ne1-tech-mall
+sudo git clone https://github.com/matzi2/ne1-tech-mall.git /volume1/docker/ne1-tech-mall
+cd /volume1/docker/ne1-tech-mall
+sudo docker compose up -d --build
+```
+
+컨테이너는 `43177`만 엽니다. HTTPS는 DSM 역방향 프록시(`ne1-tech.co.kr` → `127.0.0.1:43177`)가 담당합니다. 공유기에서 TCP 80·443만 NAS로 넘기고, DSM(5000·5001)은 인터넷에 열지 않습니다.

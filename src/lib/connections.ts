@@ -6,6 +6,7 @@ export type ConnectionId =
   | "bank"
   | "ci"
   | "domain"
+  | "nas"
   | "origin";
 
 export type SiteConnection = {
@@ -111,6 +112,19 @@ export const siteConnections: SiteConnection[] = [
     actionLabel: "가비아 DNS",
   },
   {
+    id: "nas",
+    name: "시놀로지 NAS",
+    site: "DSM · 공유기",
+    purpose: "회사 공인 IP 아래 공유기에 붙은 시놀로지에 쇼핑몰 컨테이너를 올리고, 80·443만 밖으로 엽니다.",
+    href: "/connect/nas",
+    externalUrl: "https://kb.synology.com/ko-kr/DSM/help/DSM/AdminCenter/application_reverseproxy",
+    windowName: "ne1-nas",
+    width: 720,
+    height: 860,
+    required: true,
+    actionLabel: "시놀로지 설정",
+  },
+  {
     id: "origin",
     name: "Cursor Origin",
     site: "origin.cursor.com",
@@ -141,4 +155,5 @@ export type LocalConnectionState = {
   bank?: { confirmed: boolean; depositor: string; at: string };
   ci?: { reviewed: boolean; at: string };
   domain?: { reviewed: boolean; at: string };
+  nas?: { reviewed: boolean; at: string };
 };

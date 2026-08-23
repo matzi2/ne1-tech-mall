@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -178,7 +179,7 @@ export default function DomainConnectPage() {
             />
             <p className="mt-1 text-xs text-slate-500">
               {hosting?.message ||
-                "이 작업 서버에서는 고정 공인 IPv4를 만들 수 없습니다. IP가 생기면 숫자만 넣고 A를 추가하세요."}
+                "회사 공인 IP(공유기 WAN)를 넣습니다. 시놀로지 설정은 /connect/nas 에서 합니다."}
             </p>
             {hosting?.tunnelUrl ? (
               <p className="mt-2 text-sm">
@@ -195,6 +196,9 @@ export default function DomainConnectPage() {
             </Button>
             <Button type="button" variant="outline" onClick={refresh}>
               공개 DNS 다시 조회
+            </Button>
+            <Button asChild type="button" variant="outline">
+              <Link href="/connect/nas">시놀로지 설정</Link>
             </Button>
           </div>
           {saved ? <p className="text-sm text-emerald-700">이 브라우저에 가비아 작업 내용을 저장했습니다.</p> : null}
@@ -268,7 +272,7 @@ export default function DomainConnectPage() {
             지금 추가: 호스트 <code>_dmarc</code> · 타입 <code>TXT</code> · 값 <code>v=DMARC1; p=none;</code>
           </p>
           <p>
-            A 레코드(호스트 @)는 고정 호스팅 IPv4가 생기면 넣습니다. 작업 서버 IP를 넣으면 사이트가 곧 끊깁니다.
+            A 레코드(호스트 @)는 회사 공인 IPv4(공유기 WAN)입니다. 시놀로지 내부 IP나 이 작업 서버 IP는 넣지 마세요.
           </p>
         </div>
 

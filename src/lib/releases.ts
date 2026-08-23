@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.1",
+    date: "2026-08-23",
+    title: "시놀로지 NAS 호스팅",
+    items: [
+      "회사 공인 IP → 공유기 → 시놀로지 순서로 쇼핑몰 컨테이너 안내",
+      "80·443 밖에서 확인, 가비아 A에는 공유기 WAN IP",
+    ],
+  },
+  {
     version: "0.2.0",
     date: "2026-08-23",
     title: "개발 작업창 정리",

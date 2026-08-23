@@ -49,6 +49,11 @@ function statusLabel(id: ConnectionId, github: GitHubConnectState | null, local:
     if (local.domain?.reviewed) return { text: "DNS 정보 저장됨", tone: "ok" as const };
     return { text: `${company.domain} · DNS 등록 전`, tone: "idle" as const };
   }
+  if (id === "nas") {
+    return local.nas?.reviewed
+      ? { text: "시놀로지 값 저장됨", tone: "ok" as const }
+      : { text: "공인 IP · 포트포워드", tone: "idle" as const };
+  }
   if (id === "origin") {
     return { text: "Cursor 원격 연결됨", tone: "ok" as const };
   }
