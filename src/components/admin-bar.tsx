@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/products/new", label: "상품등록" },
   { href: "/connect", label: "연결" },
   { href: "/products", label: "쇼핑몰" },
+  { href: "/history", label: "히스토리" },
 ];
 
 export function AdminBar() {

@@ -25,6 +25,9 @@ export function SiteFooter() {
           <Link href="/admin" className="block hover:text-white">
             운영화면
           </Link>
+          <Link href="/history" className="block hover:text-white">
+            버전 히스토리
+          </Link>
           <Link href="/inquiry" className="block hover:text-white">
             견적·문의
           </Link>

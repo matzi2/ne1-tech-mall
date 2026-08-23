@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/components/app-providers";
 import { Button } from "@/components/ui/button";
-import { ADMIN_EMAIL, isAdmin } from "@/lib/company";
+import { ADMIN_EMAIL, company, isAdmin } from "@/lib/company";
+import { releases } from "@/lib/releases";
 import { formatPrice } from "@/lib/format";
 import type { GitHubConnectState } from "@/lib/github-types";
 
@@ -38,10 +39,10 @@ export default function AdminOpsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <p className="text-sm font-semibold tracking-wide text-amber-700">OPERATIONS</p>
+      <p className="text-sm font-semibold tracking-wide text-amber-700">OPERATIONS · v{company.version}</p>
       <h1 className="mt-1 text-3xl font-bold text-navy">운영화면</h1>
       <p className="mt-2 text-sm text-slate-600">
-        {user?.name} · {user?.email}. 이 화면은 관리자 로그인 동안 상단 노란 막대에서 항상 열 수 있습니다.
+        {user?.name} · {user?.email}. 배포 {company.releasedAt} · 이 화면은 상단 노란 막대에서 항상 열 수 있습니다.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -106,6 +107,25 @@ export default function AdminOpsPage() {
               ))}
           </ul>
         )}
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-navy">버전 히스토리</h2>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/history">전체 보기</Link>
+          </Button>
+        </div>
+        <ul className="mt-4 space-y-3 text-sm">
+          {releases.slice(0, 3).map((release) => (
+            <li key={release.version}>
+              <p className="font-semibold text-navy">
+                v{release.version} · {release.date}
+              </p>
+              <p className="text-slate-600">{release.title}</p>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
