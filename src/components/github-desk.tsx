@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import type { GitHubConnectState } from "@/lib/github-types";
 
 export function GitHubDesk() {
   const [username, setUsername] = useState("");
-  const [token, setToken] = useState("");
   const [repoName, setRepoName] = useState("ne1-tech-mall");
   const [isPrivate, setIsPrivate] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -18,17 +17,30 @@ export function GitHubDesk() {
 
   const connected = result?.status === "published" || result?.status === "authorized";
 
+  useEffect(() => {
+    fetch("/api/connect/github/status")
+      .then((response) => response.json())
+      .then((next: GitHubConnectState) => {
+        setResult(next);
+        if (next.login && !username) setUsername(next.login);
+        if (next.repoName) setRepoName(next.repoName);
+        setIsPrivate(Boolean(next.isPrivate));
+      })
+      .catch(() => undefined);
+    // 처음 열 때만 상태를 읽습니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/connect/github/token", {
+      const response = await fetch("/api/connect/github/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
-          token,
           repoName,
           isPrivate,
         }),
@@ -36,12 +48,11 @@ export function GitHubDesk() {
       const next = (await response.json()) as GitHubConnectState;
       setResult(next);
       if (!response.ok || next.status === "error") {
-        setError(next.message ?? "연결에 실패했습니다.");
+        setError(next.message ?? "로그인에 실패했습니다.");
         return;
       }
-      setToken("");
     } catch {
-      setError("GitHub 연결에 실패했습니다.");
+      setError("GitHub 로그인에 실패했습니다.");
     } finally {
       setBusy(false);
     }
@@ -52,14 +63,14 @@ export function GitHubDesk() {
       <div className="border-b border-slate-200 px-4 py-3 md:px-6">
         <p className="text-sm font-semibold text-[#000092]">관리자 · GitHub 계정 로그인 창</p>
         <p className="mt-1 text-xs leading-5 text-slate-500">
-          이 창은 계정 로그인만 합니다. 토큰·장치 코드는 토큰 창에서 다룹니다. 쇼핑몰 메뉴에는 없습니다.
+          아이디를 넣고 로그인하면 됩니다. 토큰은 토큰 창에서만 다룹니다. 쇼핑몰 메뉴에는 없습니다.
         </p>
       </div>
 
       <form className="space-y-4 px-4 py-5 md:px-6" onSubmit={submit} autoComplete="on">
         <p className="text-sm leading-6 text-slate-600">
-          GitHub 아이디와 Personal Access Token을 넣고 이 창에서 로그인합니다. 계정 비밀번호는 git이 받지
-          않습니다. 토큰은 이 작업 세션에만 두고 git에는 저장하지 않습니다.
+          GitHub 아이디를 넣고 로그인 버튼을 누르면 이 작업 서버의 GitHub 세션으로 연결합니다. 토큰은 이
+          창에 넣지 않습니다.
         </p>
 
         <div>
@@ -72,21 +83,6 @@ export function GitHubDesk() {
             placeholder="예: matzi2"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="gh-token">Personal Access Token</Label>
-          <Input
-            id="gh-token"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            className="mt-1 font-mono"
-            placeholder="ghp_… 또는 github_pat_…"
-            value={token}
-            onChange={(event) => setToken(event.target.value)}
             required
           />
         </div>
@@ -117,25 +113,24 @@ export function GitHubDesk() {
 
         {connected ? (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-            <p className="font-semibold">연결됨 · {result?.login}</p>
+            <p className="font-semibold">로그인됨 · {result?.login}</p>
+            <p className="mt-1">{result?.message}</p>
             {result?.repoHtmlUrl ? (
               <a
-                className="mt-1 inline-block break-all text-[#0046CA] underline"
+                className="mt-2 inline-block break-all text-[#0046CA] underline"
                 href={result.repoHtmlUrl}
                 target="_blank"
                 rel="noreferrer"
               >
                 {result.repoHtmlUrl}
               </a>
-            ) : (
-              <p className="mt-1">{result?.message}</p>
-            )}
+            ) : null}
           </div>
         ) : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" variant="navy" size="lg" disabled={busy || !username.trim() || !token.trim()}>
-            {busy ? "연결 중…" : "이 창에서 로그인"}
+          <Button type="submit" variant="navy" size="lg" disabled={busy || !username.trim()}>
+            {busy ? "로그인 중…" : "이 창에서 로그인"}
           </Button>
           <Button type="button" variant="outline" size="lg" asChild>
             <Link href="/admin/github/token">토큰 창 열기</Link>

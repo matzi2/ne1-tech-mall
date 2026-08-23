@@ -75,6 +75,85 @@ export async function getGitHubPublicState(): Promise<GitHubConnectState> {
   return publicView(await readState());
 }
 
+async function readGhToken(): Promise<string | null> {
+  try {
+    const { stdout } = await execFileAsync("gh", ["auth", "token"], { timeout: 8_000 });
+    const token = stdout.trim();
+    return token || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function loginWithUsername(input: GitHubConnectInput = {}): Promise<GitHubConnectState> {
+  const username = (input.username ?? "").trim();
+  if (!username) {
+    const failed = emptyState();
+    failed.status = "error";
+    failed.message = "GitHub 아이디를 입력해 주세요.";
+    return publicView(failed);
+  }
+
+  const current = await readState();
+  const token = current.accessToken || (await readGhToken());
+  if (!token) {
+    const failed = emptyState();
+    failed.status = "error";
+    failed.message = "이 작업 서버에 GitHub 세션이 없습니다. 토큰 창에서 Personal Access Token을 넣으세요.";
+    return publicView(failed);
+  }
+
+  const next: StoredState = {
+    ...emptyState(),
+    ...current,
+    status: "authorized",
+    accessToken: token,
+    expectedLogin: username,
+    repoName: sanitizeRepoName(input.repoName) || current.repoName || REPO_NAME,
+    isPrivate: Boolean(input.isPrivate),
+    startedAt: new Date().toISOString(),
+    deviceCode: null,
+    userCode: null,
+    message: "아이디로 로그인하는 중입니다.",
+  };
+
+  try {
+    const user = await githubApi(token, "https://api.github.com/user");
+    const login = String(user.login ?? "");
+    if (!login) throw new Error("GitHub 사용자 정보를 읽지 못했습니다.");
+    next.login = login;
+    next.name = typeof user.name === "string" ? user.name : login;
+    next.htmlUrl = typeof user.html_url === "string" ? user.html_url : `https://github.com/${login}`;
+    const repoName = sanitizeRepoName(next.repoName) || REPO_NAME;
+    next.repoName = repoName;
+    const repo = await fetch(`https://api.github.com/repos/${login}/${repoName}`, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "ne1-tech-mall",
+      },
+    });
+    if (repo.ok) {
+      const repoJson = (await repo.json()) as { html_url?: string; clone_url?: string };
+      next.repoHtmlUrl = repoJson.html_url ?? `https://github.com/${login}/${repoName}`;
+      next.repoUrl = repoJson.clone_url ?? `https://github.com/${login}/${repoName}.git`;
+      next.status = "published";
+    } else {
+      next.repoHtmlUrl = `https://github.com/${login}/${repoName}`;
+      next.repoUrl = `https://github.com/${login}/${repoName}.git`;
+      next.status = "authorized";
+    }
+    next.message = `${login}으로 로그인됐습니다.`;
+    await writeState(next);
+  } catch (error) {
+    next.status = "error";
+    next.message = error instanceof Error ? error.message : "로그인에 실패했습니다.";
+    await writeState(next);
+  }
+
+  return publicView(await readState());
+}
+
 export async function startGitHubDeviceFlow(input: GitHubConnectInput = {}): Promise<GitHubConnectState> {
   const repoName = sanitizeRepoName(input.repoName) || REPO_NAME;
   const isPrivate = Boolean(input.isPrivate);

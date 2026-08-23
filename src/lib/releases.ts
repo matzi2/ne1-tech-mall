@@ -7,6 +7,15 @@ export type Release = {
 
 export const releases: Release[] = [
   {
+    version: "0.2.14",
+    date: "2026-08-23",
+    title: "GitHub 아이디만으로 로그인",
+    items: [
+      "계정 로그인 창에서 아이디를 넣고 버튼만 누르면 로그인",
+      "토큰 입력은 토큰 창에서만 함",
+    ],
+  },
+  {
     version: "0.2.13",
     date: "2026-08-23",
     title: "GitHub 로그인 창과 토큰 창 완전 분리",
